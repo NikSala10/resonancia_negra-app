@@ -46,7 +46,7 @@ export default function Context() {
   return (
  <div
   className="min-h-screen bg-cover bg-center flex items-center justify-center px-6 sm:px-8 md:px-12 relative"
-  style={{ backgroundImage: "url('../../../public/assets/Continuidad.png')" }}
+  style={{ backgroundImage: "url('/assets/Continuidad.png')" }}
 >
     {/* fila superior (solo para respirar, no mueve el centro) */}
     <div className="h-10 md:h-14" />

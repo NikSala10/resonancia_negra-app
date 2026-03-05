@@ -11,7 +11,7 @@ export default function Home() {
   <div
     className="min-h-screen flex flex-col items-center justify-center p-8 relative overflow-hidden"
     style={{
-      backgroundImage: "url('../../../public/assets/Inicio.png')", // pon tu imagen en public
+      backgroundImage: "url('/assets/Inicio.png')", // pon tu imagen en public
       backgroundSize: 'cover',
       backgroundPosition: 'center',
       backgroundRepeat: 'no-repeat',

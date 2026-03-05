@@ -108,7 +108,7 @@ useEffect(() => {
     <div
       className="min-h-screen p-6"
       style={{
-        backgroundImage: "url('../../../public/assets/Hoja grupal.png')",
+        backgroundImage: "url('/assets/Hoja grupal.png')",
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',

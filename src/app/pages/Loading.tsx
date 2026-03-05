@@ -16,7 +16,7 @@ export default function Loading() {
   return (
     <div style={{ 
       minHeight: '100vh', 
-      backgroundImage: "url('../../../public/assets/Pantalla de carga - Portada.png')", // pon tu imagen en public
+      backgroundImage: "url('/assets/Pantalla de carga - Portada.png')", // pon tu imagen en public
       backgroundRepeat: 'no-repeat',   // 🔥 evita que se repita
       backgroundSize: 'contain',         // 🔥 ocupa toda la pantalla
       backgroundPosition: 'center',    // 🔥 centra la imagen
