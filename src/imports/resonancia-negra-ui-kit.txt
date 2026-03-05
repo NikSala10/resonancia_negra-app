@@ -1,0 +1,468 @@
+ACTÚA COMO: Diseñador/a UX/UI senior + system designer. Crea un prototipo UI completo en Figma (componentes + pantallas + modales + estilos) para tablet del juego “RESONANCIA NEGRA”, una app de soporte digital donde SOLO se registran manualmente HP, puntos y recursos (no hay cálculos automáticos). La interfaz debe ser clara, oscura, tensa, post-apocalíptica y minimalista.
+
+====================================================
+0) PLATAFORMA, ESTILO Y REGLAS DE DISEÑO
+====================================================
+
+DISPOSITIVO:
+- Tablet en orientación vertical.
+- Frame base: 834 x 1194 px (tablet estándar vertical). Crea también variante horizontal 1194 x 834 si cabe.
+
+TIPOGRAFÍA:
+- Alumni Sans para TODO.
+- Jerarquía:
+  - Títulos: Alumni Sans SemiBold 32–40
+  - Subtítulos: 20–24
+  - Texto: 16–18
+  - Microtexto: 12–14
+- Alto contraste, legible.
+
+PALETA OFICIAL (USAR SOLO ESTOS HEX):
+- #FCFFBA (texto principal / highlights suaves)
+- #B89726 (bordes activos / acentos premium / “dorado”)
+- #9F1B0B (alerta / daño / peligro)
+- #11A1AB (acciones primarias / confirmaciones / resaltados UI)
+- #063850 (tarjetas / paneles / contenedores)
+- #100605 (fondo principal)
+
+REGLAS DE COLOR:
+- Fondo principal: #100605 con textura sutil (humo, sombras, grano suave).
+- Paneles/tarjetas: #063850 con 10–20% transparencia y borde fino #B89726 al estar activo.
+- Botón primario: #11A1AB con texto #100605.
+- Botón secundario: contorno #11A1AB + texto #FCFFBA.
+- Alertas: #9F1B0B (borde + glow leve).
+- Texto: #FCFFBA (siempre que sea posible).
+- Nunca usar colores fuera de estos.
+
+ESTÉTICA:
+- Post-apocalíptico sci-fi oscuro.
+- Glitch MUY sutil, partículas/esporas muy sutiles.
+- Interfaz tipo “sistema clasificado del Nuevo Gobierno”.
+- Mucho aire, nada saturado.
+
+COMPONENTES:
+- Botones grandes (tablet): altura 56–64 px.
+- Tarjetas con esquinas 12–16 px.
+- Sombras suaves, no coloridas.
+
+NO INCLUIR:
+- NO dados en pantalla (ni D4 ni D20).
+- NO sección “prueba de eventos”.
+- NO “probar finales”.
+- NO “nuevo registro”.
+- NO historial cronológico.
+
+IMPORTANTE DE FUNCIONALIDAD:
+- Todo se actualiza MANUALMENTE. La app NO calcula automáticamente recompensas/penalizaciones. Solo muestra el reto y permite que CLARA registre cambios.
+- Los controles de HP/Puntos/Recursos deben ser “stepper” (– / valor / +) sin botones tipo +5, -5.
+
+====================================================
+1) CONTEXTO DEL JUEGO (PARA MICROCOPY)
+====================================================
+
+Historia resumida para pantallas de contexto:
+- Año 2022: colapso. Llegan “Las Sombras”. Esporas tóxicas convierten bestias en “Mutados”.
+- Se crea “El Nuevo Gobierno” y clasifica ciudadanos 1–8.
+- Personajes: Keira, Clara, Ivan, Leni, Adrian. Clara tiene pistas del origen. Viajan por la verdad.
+
+Roles (mostrar en tarjetas):
+- Keira: Luchadora
+- Adrian: Médico
+- Ivan: Ingeniero
+- Clara: Investigadora
+- Leni: Exploradora
+
+Estado inicial recomendado (para prefill en UI):
+- HP inicial: 30 cada jugador.
+- Munición inicial: 5 SOLO Keira.
+- Recursos grupales iniciales: 1 Escudo de plasma, 1 Detector de esporas, 1 Kit médico.
+
+Inicio por camino:
+- El grupo tira D20 físicamente.
+- Si sale 1–10: inician por camino DERECHA.
+- Si sale 11–20: inician por camino IZQUIERDA.
+En digital: NO se tira dado; solo se elige con 2 botones: “Camino Izquierdo” / “Camino Derecho”.
+
+====================================================
+2) ARQUITECTURA DE PANTALLAS (FLOW OBLIGATORIO)
+====================================================
+
+Crear estas pantallas en este orden:
+
+A) Pantalla 01 — CARGA (Loading)
+- Igual a la referencia: “RESONANCIA NEGRA” + barra “Cargando recursos…”
+- Fondo ilustrado oscuro.
+- Barra de progreso fina con color #B89726 o #11A1AB (elegir 1).
+
+B) Pantalla 02 — INICIO
+- Logo/ícono del juego centrado.
+- Botón primario grande: “Iniciar juego”.
+- Fondo oscuro con ruinas, niebla y sombras.
+
+C) Pantalla 03 — SELECCIÓN DE CAMINO
+- Título: “Selección de Ruta”
+- Texto breve: “El equipo ya lanzó el D20 físicamente. Seleccionen el camino según el resultado.”
+- Mostrar regla en microtexto:
+  “1–10: Derecha | 11–20: Izquierda”
+- Dos botones grandes:
+  - “Camino Izquierdo”
+  - “Camino Derecho”
+- Guardar la selección como estado de partida.
+
+D) Pantalla 04 — CONTEXTO (Historia)
+- Mostrar historia en 2–3 slides/páginas (swipe) o en una sola con scroll:
+  1) El colapso + Sombras + esporas.
+  2) Nuevo Gobierno + clasificación 1–8.
+  3) Los 5 protagonistas + expedición a la verdad.
+- Botón: “Continuar”.
+
+E) Pantalla 05 — HOME / TABLERO DIGITAL (Principal)
+- Layout en 2 columnas:
+  - Izquierda: Panel de “Estado de Jugadores”
+  - Derecha: Panel “Estado del Grupo” + Panel “Casillas (6 botones)” + Botón “Finalizar Partida”
+- Todo visible sin scroll en tablet vertical (si hace falta, colapsar secciones en acordeón).
+
+F) Pantalla 06 — MODAL DE RETO (se abre desde casilla)
+- Modal grande centrado.
+- Contenido: Icono del reto, nombre, evento, opciones (botones).
+- Un botón secundario: “Cerrar”.
+- Un botón primario: “Registrar en hoja de Clara” (simplemente cierra el modal y lleva foco al panel de edición).
+
+G) Pantalla 07 — MODAL DE ACERTIJO (se abre desde casilla azul “?”)
+- Modal con: historia + acertijo + input para respuesta + botones:
+  - “Confirmar respuesta”
+  - “Ignorar y continuar”
+- Mostrar feedback visual “Correcto/Incorrecto” (sin auto-modificar stats).
+- Mostrar “Respuesta esperada” SOLO en una sección colapsable “Ver solución (solo para Clara)” o como “Solución: …” en texto pequeño.
+
+H) Pantalla 08 — FINAL / PODIO (aparece SOLO al final)
+- Al presionar “Finalizar Partida” en Home:
+  - Mostrar “Resultado Final” según puntos grupales y condiciones (ver sección 6).
+  - Mostrar podio Top 3 por puntos individuales.
+- No permitir elegir el final manualmente.
+
+====================================================
+3) HOME: ESTRUCTURA EXACTA Y CONTROLES
+====================================================
+
+PANEL 1: ESTADO DE JUGADORES (5 tarjetas)
+Cada tarjeta debe incluir:
+- Nombre (Keira/Adrian/Ivan/Clara/Leni)
+- Rol
+- Estado (chip): “Normal” (por defecto)
+- HP: stepper (– / valor / +)
+- Puntos individuales: stepper (– / valor / +)
+- Munición: SOLO para Keira (stepper)
+
+Valores por defecto:
+- HP = 30 todos.
+- Puntos = 0 todos.
+- Munición Keira = 5.
+
+PANEL 2: ESTADO DEL GRUPO
+Controles (todos stepper):
+- Puntos grupales (default 0)
+- Recursos:
+  - Escudo de plasma (default 1)
+  - Detector de esporas (default 1)
+  - Kit médico (default 1)
+  - Munición de reserva (si quieres manejarlo como grupo) (opcional; si no, omitir)
+- Contadores:
+  - Retos completados (default 0)
+  - Bajas (default 0)
+
+Nota: Inventario NO automático; es manual por Clara.
+
+PANEL 3: CASILLAS (6 BOTONES con ICONOS)
+En Home, mostrar una sección fija: “Casillas activas (ruta seleccionada)”.
+Deben ser exactamente 6 botones en grid 3x2 (o 2x3) con icono grande.
+Cada botón abre el modal correspondiente.
+
+IMPORTANTE: Los iconos deben replicar estilo del tablero físico.
+Usar estos 6:
+1) Mano (reto)
+2) Trofeo (reto)
+3) Engranaje/virus (reto)
+4) Cápsula/píldora (reto)
+5) Explosión/impacto (reto)
+6) Pistola (reto)
+Y además una casilla azul con “?” para acertijo (pero en este proyecto, SOLO mostrar 6 botones totales:
+- 5 retos + 1 acertijo “?” por cada camino).
+
+Como el usuario dijo “son 6: la de los retos y cada una tiene un icono, y la azul con signo de pregunta es acertijo”:
+Para cada camino:
+- 5 botones = retos
+- 1 botón = acertijo “?”
+
+Estados visuales de botones/casillas:
+- Normal: panel #063850, icono #FCFFBA
+- Activa/seleccionada: borde #B89726 + glow sutil
+- Completada: opacidad 60% + check pequeño
+(Esto es UI; no auto-calcula, solo estado visual que Clara puede marcar “Completado”.)
+
+PANEL 4: BOTÓN GUARDAR
+- Botón grande: “Guardar cambios”
+- Microcopy: “Los cambios se registran manualmente. Si no se registran, se pierden narrativamente.”
+
+====================================================
+4) CONTENIDO EXACTO DE RETOS Y ACERTIJOS
+====================================================
+
+La app debe incluir 2 sets: CAMINO DERECHO y CAMINO IZQUIERDO.
+En la pantalla Home, mostrar un toggle pequeño arriba del panel de casillas:
+- “Ruta actual: Derecha / Izquierda”
+(La ruta se define en la Pantalla 03, pero el toggle ayuda si quieren revisar.)
+
+----------------------------------------------------
+CAMINO DERECHO — 5 RETOS + 1 ACERTIJO
+----------------------------------------------------
+
+[D1] RETO: LABORATORIO ABANDONADO
+Evento:
+“El grupo encuentra una zona de investigación abandonada. Cada jugador obtiene 1 carta de recurso al azar.”
+Decisión individual (botones):
+- “Compartir su recurso con el grupo”
+  Efectos (solo mostrar, NO aplicar automático):
+  “+5 pts individuales | +5 pts grupales”
+- “No compartir su recurso”
+  “+3 pts individuales | +1 pt grupal”
+
+[D2] RETO: DETECTOR DE ESPORAS
+Evento:
+“El equipo sospecha que uno de los integrantes podría estar infectado. El grupo debe decidir si enviar a un jugador (usará un Kit Médico) para recuperar una pista prometida.”
+Decisiones grupales (3 botones):
+- “Saltarse el reto”
+  “-7 pts grupales | -3 pts individuales a cada jugador”
+- “No sacrificar un Kit Médico”
+  “Sin cambios | No obtienen pista”
+- “Enviar a un jugador”
+  Sub-sección (si eligen esta opción, mostrar bloque adicional):
+  “El jugador enviado pierde -10 HP | Gana +3 pts individuales | Clara recibe una pista.”
+  Luego decisión de Clara (2 botones):
+  - “Compartir la pista”
+    “+5 pts grupales | +2 pts individuales para todos | Clara +3 pts extra”
+  - “Ocultar la pista”
+    “Clara -5 pts individuales | 0 pts grupales”
+
+[D3] RETO: CAMPO DE ESPORAS
+Zona: “Área abierta contaminada”
+Evento:
+“El detector marca nivel crítico. Adrian identifica que cruzar sin protección es peligroso. Ivan podría modificar el detector para crear un escudo temporal.”
+Regla visible:
+“Si el grupo NO tiene detector de esporas: Todos pierden -5 HP.”
+Decisiones (3 botones):
+- “Sacrificar detector de esporas (Iván)”
+  “Pierden detector + 1 recurso a elección | Cruzan sin daño | +12 pts grupales | Iván +3 pts”
+- “Cruzar sin protección”
+  “Cada jugador pierde -5 HP | +5 pts grupales”
+- “Rodear zona”
+  “Pierden 1 turno | -3 pts grupales”
+
+[D4] RETO: CÁMARA SELLADA
+Zona: “Laboratorio subterráneo”
+Evento:
+“Ivan encuentra una cámara con tecnología que podría crear un arma definitiva. Para activarla, alguien debe quedarse dentro mientras se estabiliza.”
+Decisiones (2 botones):
+- “Un jugador se ofrece voluntario”
+  “Voluntario pierde -5 HP”
+  Nota:
+  “Luego el grupo lanza D20 físicamente: si >10 ganan Escudo de Plasma | +20 pts grupales | +5 pts al voluntario”
+- “Nadie se ofrece”
+  “Cámara explota | Todos pierden -5 HP | -8 pts grupales”
+
+[D5] RETO: TORMENTA DE ESPORAS
+Zona: “Zona abierta sin refugio”
+Evento:
+“Una tormenta de esporas se aproxima. Leni encuentra refugio para 3 personas. El grupo tiene 2 turnos para encontrar refugio.”
+Decisiones (2 botones):
+- “Usar refugio de Leni”
+  “3 protegidos | Los demás pierden -10 HP | +8 pts grupales | Los que quedan afuera +4 pts”
+- “Correr sin refugio”
+  “Todos aumentan +0.2 infección | +3 pts grupales | +2 pts individuales cada jugador”
+Nota adicional:
+“Adrián puede usar Kit Médico para salvar a alguien (decisión estratégica).”
+
+[D6] ACERTIJO (casilla azul “?”): EL ACERTIJO DEL VIGÍA
+Evento narrativo:
+“Encuentran una estructura metálica corroída. Una consola antigua aún activa habla con voz distorsionada: ‘Solo quien comprenda la verdad invisible podrá obtener protección.’”
+Acertijo (mostrar en bloque):
+“Este ser todo lo devora:
+Aves, bestias, árboles y flores.
+Destruye el hierro, rompe el acero
+Y reduce montañas a polvo.”
+Decisión (2 botones):
+- “Intentar resolver”
+  -> mostrar input de texto: “Escribe tu respuesta…”
+  -> botón: “Confirmar respuesta”
+  -> feedback visual:
+     - Si coincide con “EL TIEMPO” (case-insensitive): mostrar “Correcto”
+       Recompensa (solo mostrar):
+       “Obtiene Escudo de Plasma | +7 pts individuales | +5 pts grupales”
+     - Si no: mostrar “Incorrecto”
+       “-5 HP al jugador | -3 pts individuales | 0 pts grupales”
+- “Ignorar y continuar”
+  “No pierde vida | +1 pt individual por prudencia | No obtiene recompensa”
+
+----------------------------------------------------
+CAMINO IZQUIERDO — 5 RETOS + 1 ACERTIJO
+----------------------------------------------------
+
+[I1] RETO: BOSQUE ABANDONADO
+Evento:
+“Un mutado daña el traje de protección de Clara.”
+Decisiones (2 botones):
+- “Compartir Kit Médico”
+  “+14 pts grupales | +5 pts individuales cada jugador”
+- “No compartir”
+  “-7 pts grupales | -1 pt individual cada jugador | Clara pierde -3 HP”
+
+[I2] RETO: FÁBRICA EN RUINAS
+Zona: “Interior industrial”
+Evento:
+“Sala sellada con señales de actividad reciente. Iván puede forzar entrada, pero el ruido atraerá mutados. Leni puede buscar ruta alternativa silenciosa pero tardará más.”
+Decisiones (3 botones):
+- “Iván fuerza la entrada”
+  “-3 municiones | +2 municiones recuperadas | Todos pierden -7 HP | +10 pts grupales”
+- “Ruta alternativa de Leni”
+  “Sin daño | Obtienen 1 Kit Médico | +6 pts grupales | Leni +2 pts”
+- “Abandonar”
+  “-7 pts grupales”
+
+[I3] RETO: EMBOSCADA NOCTURNA
+Zona: “Campamento”
+Evento:
+“Durante el descanso, 2 mutados atacan. Leni avisa al grupo. Keira puede enfrentarlos sola o el grupo entero.”
+Decisiones (3 botones):
+- “Keira sola”
+  “Gasta 2 municiones propias | Keira -5 HP | Keira +8 pts | +4 pts grupales”
+- “Todos combaten”
+  “Cada jugador -2 HP | +10 pts grupales”
+- “Huir”
+  “Pierden escudo grupal | -5 pts grupales”
+
+[I4] RETO: SEÑAL DE RADIO
+Zona: “Torre de comunicaciones”
+Evento:
+“Leni capta una señal con coordenadas. Descifrar toma tiempo y deja expuesto al grupo.”
+Decisiones (3 botones):
+- “Descifrar señal (Adrián + Leni)”
+  “Adrián gasta 1 Kit Médico | Leni gasta 1 munición si hay combate | Obtienen pista clave | +15 pts grupales”
+- “Descifrar sin Adrián”
+  “Todos pierden -8 HP | +10 pts grupales”
+- “Ignorar señal”
+  “No obtienen pista”
+
+[I5] RETO: PUENTE INESTABLE
+Zona: “Río contaminado”
+Evento:
+“Puente a punto de colapsar. Cruzar de uno en uno expone al grupo. Keira puede cubrir el cruce pero será la última.”
+Decisiones (3 botones):
+- “Cruce ordenado con cobertura”
+  “Keira gasta TODA la munición | Iván lanza D20 físico:
+   - número par: cruza seguro
+   - número impar: Keira pierde -5 HP
+   +15 pts grupales si sobrevive | +8 pts si cae pero vive”
+- “Cruce rápido”
+  “2 jugadores al azar pierden -8 HP | +5 pts grupales”
+- “Buscar otra ruta”
+  “-2 municiones | -4 pts grupales | -2 pts individuales | Pierden 1 recurso al azar | Pierden 1 turno”
+
+[I6] ACERTIJO (casilla azul “?”): EL SUSURRO DE LA SOMBRA
+Evento:
+“Encuentran un cilindro de cristal intacto. Dentro, una sustancia oscura se mueve como viva. Una inscripción aparece:”
+Acertijo:
+“No tengo cuerpo, pero puedo envolver el mundo.
+No tengo boca, pero puedo devorarte.
+Nací del miedo y crezco en silencio.
+Cuando me ignoras, me hago más fuerte.
+¿Qué soy?”
+Decisión:
+- “Intentar resolver”
+  input + “Confirmar respuesta”
+  - Si coincide con “LA INFECCIÓN” (case-insensitive, aceptar “INFECCION” sin tilde): Correcto
+    Mostrar recompensa:
+    “+8 pts individuales | +6 pts grupales | Reduce -0.1 infección global | Obtiene carta: Antídoto Parcial”
+  - Si no: Incorrecto
+    “-6 HP | +0.1 infección global | -4 pts individuales”
+- “Retirarse / no responder”
+  “+2 pts individuales por cautela | Sin recompensa”
+
+NOTA SOBRE INFECCIÓN GLOBAL:
+- Agregar en “Estado del Grupo” un campo opcional “Infección global” con stepper decimal (ej. 0.0 a 1.0 en pasos de 0.1).
+- No calcular automático; solo permitir editar manualmente.
+
+====================================================
+5) COMPONENTES REUTILIZABLES (DEBES CREARLOS)
+====================================================
+
+- Component: Button/Primary
+- Component: Button/Secondary
+- Component: Card/PlayerStatus
+- Component: Card/GroupStatus
+- Component: Stepper (– / value / +) para números enteros
+- Component: StepperDecimal para infección (paso 0.1)
+- Component: Tile/CasillaIcon (icono + label + estados: normal/active/completed)
+- Component: Modal/Reto
+- Component: Modal/Acertijo (con input)
+- Component: Tag/Estado (Normal / Peligro / etc.)
+
+Auto Layout en todo, con constraints correctos.
+
+====================================================
+6) FINAL Y PODIO (SOLO AL TERMINAR)
+====================================================
+
+Pantalla Final (se abre con botón “Finalizar Partida”):
+- Mostrar:
+  - “Puntos grupales finales: [valor]”
+  - “Final alcanzado: [Feliz / Malo / Fantástico / Real]”
+  - Texto narrativo del final (usar tarjetas tipo “clasificado”).
+- Como NO tenemos rangos numéricos exactos definidos, implementar lógica de selección como UI (no código):
+  - Si “Retos completados” = todos y “Bajas” = 0 y “HP de vivos >=15” + “Recursos altos” => FINAL REAL
+  - Si “Retos completados alto” + “Puntos grupales buenos” => FINAL FANTÁSTICO
+  - Si “Puntos grupales muy bajos” => FINAL MALO
+  - Si “Buena cooperación / puntos medios-altos” => FINAL FELIZ
+(En el diseño, mostrar estos criterios como checklist para Clara, y un selector final bloqueado que se activa cuando Clara lo confirme.)
+
+PODIO:
+- Mostrar top 3 jugadores por puntos individuales (solo lectura; Clara lo actualiza manualmente).
+- Badges:
+  1) 80+ “Mención de Honor Suprema”
+  2) 65–75 “Mención de Honor”
+  3) 50–55 “Reconocimiento al Mérito”
+
+====================================================
+7) MICROINTERACCIONES (VISUALES, NO CÓDIGO)
+====================================================
+
+- Hover/pressed states (aunque sea tablet, mostrar pressed).
+- Al abrir modal: animación fade + scale leve.
+- Al cambiar stepper: micro-animación de conteo (sube/baja 1).
+- Estados de casilla: al marcar completada, aparece check pequeño color #11A1AB.
+
+====================================================
+8) ENTREGABLE FINAL EN FIGMA
+====================================================
+
+Crea:
+- Una página “Design System” con:
+  - Color styles
+  - Text styles
+  - Components
+- Una página “Screens” con:
+  - 01 Loading
+  - 02 Inicio
+  - 03 Selección de camino
+  - 04 Contexto (slides)
+  - 05 Home (principal)
+  - Modales (Reto + Acertijo)
+  - 08 Final + Podio
+- Conecta el prototipo con enlaces:
+  Loading -> Inicio -> Selección -> Contexto -> Home
+  Home -> cada casilla abre su modal
+  Home -> Finalizar partida -> Final/Podio
+
+RECUERDA:
+- NO dados, NO prueba de eventos, NO elegir finales manualmente.
+- Todo registro es manual por Clara con steppers.
+- Usar EXACTAMENTE la paleta y Alumni Sans.
