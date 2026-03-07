@@ -93,7 +93,7 @@ export default function Retos() {
 
   return (
     <div
-      className="min-h-screen p-6"
+      className="min-h-screen p-6 "
       style={{
         backgroundImage: "url('/assets/Hoja grupal.png')",
         backgroundSize: "cover",
@@ -105,23 +105,31 @@ export default function Retos() {
       <motion.div
         initial={{ opacity: 0, y: -12 }}
         animate={{ opacity: 1, y: 0 }}
-        className="max-w-[900px] mx-auto mt-10 flex items-center justify-between"
+        className="max-w-[700px] mx-auto mt-10 flex items-center justify-between"
       >
         <div>
           <p className="text-[#B89726] text-lg font-['Mansalva']">
             CAMINO {effectivePath === "right" ? "DERECHO" : "IZQUIERDO"}
           </p>
-          <h2 className="text-2xl font-bold text-[#11A1AB] mt-2">RETOS</h2>
+          <h2 className="text-5xl font-bold text-[#11A1AB] mt-2">RETOS</h2>
+          
         </div>
 
         <Button
           onClick={() => navigate("/game")}
           variant="outline"
-          className="h-12 px-6 text-white border-white/20 hover:bg-white/10"
+          className="h-15 px-12 text-white border-white/20 hover:bg-white/10 font-bold text-2xl"
         >
           Volver
         </Button>
+        
       </motion.div>
+      
+      <div className="max-w-[700px] mx-auto mt-6 text-center">
+        <div className="inline-block px-6 py-2 rounded-md border border-[#B89726]/40 bg-[#B89726]/10 text-[#FCFFBA] text-xl font-semibold">
+          Escoge el reto que te tocó durante la partida
+        </div>
+      </div>
 
       {!effectivePath ? (
         <div className="max-w-[900px] mx-auto mt-10">
@@ -141,13 +149,11 @@ export default function Retos() {
       ) : (
         <>
           {/* Panel casillas */}
-          <div className="max-w-[900px] mx-auto mt-8">
-            <div className="rounded-2xl bg-black/45 border border-white/10 backdrop-blur-md p-5">
-              <div className="grid grid-cols-2 gap-4">
+          <div className="max-w-[700px] mx-auto mt-8">
+            <div className="grid grid-cols-3 gap-2">
                 {mainChallenges.map((challenge) => (
                   <TileButton
                     key={challenge.id}
-                    icon={challenge.icon}
                     tileBg={challenge.tileBg}
                     isCompleted={isDone(challenge.id)} // ✅ completado o pendiente
                     onClick={() => handleChallengeClick(challenge.id)}
@@ -157,18 +163,16 @@ export default function Retos() {
 
               {/* Casilla Azul */}
               {puzzleChallenge && (
-                <div className="mt-8">
-                  <h3 className="text-lg font-bold text-[#B89726] mb-3">CASILLA AZUL</h3>
+                <div className="mt-8 ">
+                  <h3 className="text-5xl font-bold text-[#B89726] mb-3">ACERTIJO</h3>
+                  <div className="max-w-[250px]">
                   <TileButton
-                    icon="help"
-                    label="ACERTIJO"
                     tileBg={puzzleChallenge.tileBg}
                     isCompleted={isDone(puzzleChallenge.id)} // ✅ completado o pendiente
                     onClick={handlePuzzleClick}
-                  />
+                  /></div>
                 </div>
               )}
-            </div>
           </div>
 
           {/* Modales */}

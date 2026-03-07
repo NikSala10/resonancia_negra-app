@@ -12,7 +12,8 @@ export interface ChallengeOption {
 export interface Challenge {
   id: number;
   type: 'challenge' | 'puzzle';
-  icon: ChallengeIcon;
+  icon?: ChallengeIcon;
+  tileBg: string;
   title: string;
   zone?: string;
   event: string;
@@ -34,6 +35,7 @@ const rightPathChallenges: Challenge[] = [
     type: 'challenge',
     icon: 'hand',
     title: 'LABORATORIO ABANDONADO',
+    tileBg: '/assets/1.svg',
     event: 'El grupo encuentra una zona de investigación abandonada. Cada jugador obtiene 1 carta de recurso al azar.',
     options: [
       {
@@ -51,6 +53,7 @@ const rightPathChallenges: Challenge[] = [
     type: 'challenge',
     icon: 'trophy',
     title: 'DETECTOR DE ESPORAS',
+    tileBg: '/assets/2.svg',
     event: 'El equipo sospecha que uno de los integrantes podría estar infectado. El grupo debe decidir si enviar a un jugador (usará un Kit Médico) para recuperar una pista prometida.',
     options: [
       {
@@ -85,6 +88,7 @@ const rightPathChallenges: Challenge[] = [
     type: 'challenge',
     icon: 'biohazard',
     title: 'CAMPO DE ESPORAS',
+    tileBg: '/assets/3.svg',
     zone: 'Área abierta contaminada',
     event: 'El detector marca nivel crítico. Adrian identifica que cruzar sin protección es peligroso. Ivan podría modificar el detector para crear un escudo temporal.',
     rule: 'Si el grupo NO tiene detector de esporas: Todos pierden -5 HP.',
@@ -108,6 +112,7 @@ const rightPathChallenges: Challenge[] = [
     type: 'challenge',
     icon: 'pill',
     title: 'CÁMARA SELLADA',
+    tileBg: '/assets/4.svg',
     zone: 'Laboratorio subterráneo',
     event: 'Ivan encuentra una cámara con tecnología que podría crear un arma definitiva. Para activarla, alguien debe quedarse dentro mientras se estabiliza.',
     options: [
@@ -126,6 +131,7 @@ const rightPathChallenges: Challenge[] = [
     type: 'challenge',
     icon: 'zap',
     title: 'TORMENTA DE ESPORAS',
+    tileBg: '/assets/5.svg',
     zone: 'Zona abierta sin refugio',
     event: 'Una tormenta de esporas se aproxima. Leni encuentra refugio para 3 personas. El grupo tiene 2 turnos para encontrar refugio.',
     options: [
@@ -144,6 +150,7 @@ const rightPathChallenges: Challenge[] = [
     type: 'puzzle',
     icon: 'help',
     title: 'EL ACERTIJO DEL VIGÍA',
+    tileBg: '/assets/acertijo.svg',
     event: 'Encuentran una estructura metálica corroída. Una consola antigua aún activa habla con voz distorsionada: "Solo quien comprenda la verdad invisible podrá obtener protección."',
     puzzle: {
       riddle: 'Este ser todo lo devora:\nAves, bestias, árboles y flores.\nDestruye el hierro, rompe el acero\nY reduce montañas a polvo.',
@@ -162,6 +169,7 @@ const leftPathChallenges: Challenge[] = [
     type: 'challenge',
     icon: 'hand',
     title: 'BOSQUE ABANDONADO',
+    tileBg: '/assets/1 iz.svg',
     event: 'Un mutado daña el traje de protección de Clara.',
     options: [
       {
@@ -179,6 +187,7 @@ const leftPathChallenges: Challenge[] = [
     type: 'challenge',
     icon: 'trophy',
     title: 'FÁBRICA EN RUINAS',
+    tileBg: '/assets/2 iz.svg',
     zone: 'Interior industrial',
     event: 'Sala sellada con señales de actividad reciente. Iván puede forzar entrada, pero el ruido atraerá mutados. Leni puede buscar ruta alternativa silenciosa pero tardará más.',
     options: [
@@ -201,6 +210,7 @@ const leftPathChallenges: Challenge[] = [
     type: 'challenge',
     icon: 'biohazard',
     title: 'EMBOSCADA NOCTURNA',
+    tileBg: '/assets/3 iz.svg',
     zone: 'Campamento',
     event: 'Durante el descanso, 2 mutados atacan. Leni avisa al grupo. Keira puede enfrentarlos sola o el grupo entero.',
     options: [
@@ -223,6 +233,7 @@ const leftPathChallenges: Challenge[] = [
     type: 'challenge',
     icon: 'pill',
     title: 'SEÑAL DE RADIO',
+    tileBg: '/assets/4 iz.svg',
     zone: 'Torre de comunicaciones',
     event: 'Leni capta una señal con coordenadas. Descifrar toma tiempo y deja expuesto al grupo.',
     options: [
@@ -245,6 +256,7 @@ const leftPathChallenges: Challenge[] = [
     type: 'challenge',
     icon: 'gun',
     title: 'PUENTE INESTABLE',
+    tileBg: '/assets/5 iz.svg',
     zone: 'Río contaminado',
     event: 'Puente a punto de colapsar. Cruzar de uno en uno expone al grupo. Keira puede cubrir el cruce pero será la última.',
     options: [
@@ -267,6 +279,7 @@ const leftPathChallenges: Challenge[] = [
     type: 'puzzle',
     icon: 'help',
     title: 'EL SUSURRO DE LA SOMBRA',
+    tileBg: '/assets/tiles/acertijo.svg',
     event: 'Encuentran un cilindro de cristal intacto. Dentro, una sustancia oscura se mueve como viva. Una inscripción aparece:',
     puzzle: {
       riddle: 'No tengo cuerpo, pero puedo envolver el mundo.\nNo tengo boca, pero puedo devorarte.\nNací del miedo y crezco en silencio.\nCuando me ignoras, me hago más fuerte.\n¿Qué soy?',
