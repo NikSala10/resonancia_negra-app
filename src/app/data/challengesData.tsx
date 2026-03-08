@@ -54,7 +54,7 @@ const rightPathChallenges: Challenge[] = [
     icon: 'trophy',
     title: 'DETECTOR DE ESPORAS',
     tileBg: '/assets/2.svg',
-    event: 'El equipo sospecha que uno de los integrantes podría estar infectado. El grupo debe decidir si enviar a un jugador (usará un Kit Médico) para recuperar una pista prometida.',
+    event: 'El equipo sospecha que uno de los integrantes podría estar infectado. El grupo debe decidir si enviar a un jugador (usará un Kit Médico).',
     options: [
       {
         label: 'Saltarse el reto',
@@ -257,7 +257,7 @@ const leftPathChallenges: Challenge[] = [
       },
       {
         label: 'Buscar otra ruta',
-        effects: '-2 municiones | -4 pts grupales | -2 pts individuales | Pierden 1 recurso al azar | Pierden 1 turno'
+        effects: '-2 municiones | -4 pts grupales | -2 pts individuales | Pierden 1 recurso al azar'
       }
     ]
   },
