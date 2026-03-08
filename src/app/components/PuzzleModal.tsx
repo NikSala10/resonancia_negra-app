@@ -35,35 +35,35 @@ export function PuzzleModal({
 }: PuzzleModalProps) {
   const [answer, setAnswer] = useState("");
   const [secondsLeft, setSecondsLeft] = useState(DEFAULT_SECONDS);
+  const [showTimeoutNotice, setShowTimeoutNotice] = useState(false);
 
   useEffect(() => {
     if (!isOpen) return;
+
     setAnswer("");
     setSecondsLeft(DEFAULT_SECONDS);
+    setShowTimeoutNotice(false);
   }, [isOpen, challenge.id]);
 
   useEffect(() => {
     if (!isOpen) return;
     if (secondsLeft <= 0) return;
+    if (showTimeoutNotice) return;
 
     const timer = window.setInterval(() => {
       setSecondsLeft((prev) => Math.max(0, prev - 1));
     }, 1000);
 
     return () => window.clearInterval(timer);
-  }, [isOpen, secondsLeft]);
+  }, [isOpen, secondsLeft, showTimeoutNotice]);
 
   useEffect(() => {
     if (!isOpen) return;
     if (secondsLeft !== 0) return;
     if (!challenge.puzzle) return;
 
-    onComplete({
-      challengeId: challenge.id,
-      result: "incorrect",
-      effectsText: challenge.puzzle.incorrectEffect,
-    });
-  }, [secondsLeft, isOpen, challenge, onComplete]);
+    setShowTimeoutNotice(true);
+  }, [secondsLeft, isOpen, challenge]);
 
   const mm = String(Math.floor(secondsLeft / 60)).padStart(2, "0");
   const ss = String(secondsLeft % 60).padStart(2, "0");
@@ -98,6 +98,18 @@ export function PuzzleModal({
       challengeId: challenge.id,
       result: "ignore",
       effectsText: challenge.puzzle.ignoreEffect,
+    });
+  };
+
+  const handleTimeoutAcknowledge = () => {
+    if (!challenge.puzzle) return;
+
+    setShowTimeoutNotice(false);
+
+    onComplete({
+      challengeId: challenge.id,
+      result: "incorrect",
+      effectsText: challenge.puzzle.incorrectEffect,
     });
   };
 
@@ -272,7 +284,7 @@ export function PuzzleModal({
                 <div className="grid grid-cols-2 gap-3">
                   <Button
                     onClick={handleResolve}
-                    disabled={!canResolve}
+                    disabled={!canResolve || showTimeoutNotice}
                     className="h-14 bg-[#251241] hover:bg-[#311857] disabled:opacity-40 disabled:pointer-events-none border border-[#8B5CF6]/35 text-[#A78BFA] font-bold text-[20px]"
                   >
                     Intentar resolver
@@ -280,7 +292,8 @@ export function PuzzleModal({
 
                   <Button
                     onClick={handleIgnore}
-                    className="h-14 bg-[#081018] hover:bg-white/5 border border-white/10 text-white/45 font-bold text-[20px]"
+                    disabled={showTimeoutNotice}
+                    className="h-14 bg-[#081018] hover:bg-white/5 border border-white/10 text-white/45 font-bold text-[20px] disabled:opacity-40 disabled:pointer-events-none"
                   >
                     Ignorar y continuar
                   </Button>
@@ -288,6 +301,30 @@ export function PuzzleModal({
               </div>
             </div>
           </motion.div>
+
+          {showTimeoutNotice && (
+            <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+              <div className="absolute inset-0 bg-black/70" />
+              <div className="relative w-full max-w-md rounded-2xl border border-[#9F1B0B]/30 bg-[#120A10] p-6">
+                <h3 className="text-2xl font-bold text-[#FF8EA2] mb-3">
+                  Tiempo agotado
+                </h3>
+                <p className="text-[#F3D8DF] text-lg leading-relaxed">
+                  Como no se eligió ninguna opción a tiempo, se aplica la penalización
+                  automática del acertijo:
+                  <br />
+                  <strong>{challenge.puzzle.incorrectEffect}</strong>
+                </p>
+
+                <button
+                  onClick={handleTimeoutAcknowledge}
+                  className="mt-5 w-full h-12 rounded-lg border border-[#9F1B0B]/40 bg-[#2A0912] text-[#FF4D6D] font-bold"
+                >
+                  Entendido
+                </button>
+              </div>
+            </div>
+          )}
         </>
       )}
     </AnimatePresence>
