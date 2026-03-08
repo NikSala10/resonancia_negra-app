@@ -188,14 +188,6 @@ export function PuzzleModal({
               </div>
 
               <div className="px-5 md:px-6 pt-4">
-                <div className="rounded-xl border border-[#8B5CF6]/20 bg-[#080B18]/95 px-5 py-4 text-center">
-                  <p className="text-[20px] leading-[1.6] text-[#8B5CF6] whitespace-pre-line">
-                    “Solo quien comprenda la verdad invisible podrá obtener protección.”
-                  </p>
-                </div>
-              </div>
-
-              <div className="px-5 md:px-6 pt-4">
                 <div className="rounded-xl border border-[#3B4A70]/25 bg-[#08131B]/95 px-5 py-5">
                   <div className="text-[16px] uppercase tracking-[0.22em] text-[#8B5CF6] mb-4">
                     Acertijo proyectado
