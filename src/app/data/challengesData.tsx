@@ -62,7 +62,7 @@ const rightPathChallenges: Challenge[] = [
       },
       {
         label: 'No sacrificar un Kit Médico',
-        effects: 'Sin cambios '
+        effects: '-2 pts grupales | -1 pt individual a cada jugador'
       },
       {
         label: 'Enviar a un jugador',
