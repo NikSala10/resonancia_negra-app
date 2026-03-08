@@ -144,7 +144,7 @@ const rightPathChallenges: Challenge[] = [
       answer: 'EL TIEMPO',
       correctEffect: 'Obtiene Escudo de Plasma | +7 pts individuales | +5 pts grupales',
       incorrectEffect: '-5 HP al jugador | -3 pts individuales | 0 pts grupales',
-      ignoreEffect: 'No pierde vida | +1 pt individual por prudencia | No obtiene recompensa'
+      ignoreEffect: '+1 pts grupales | +1 pt individual por prudencia '
     }
   }
 ];
@@ -273,7 +273,7 @@ const leftPathChallenges: Challenge[] = [
       answer: 'LA INFECCIÓN',
       correctEffect: '+8 pts individuales | +6 pts grupales | Reduce -0.1 infección global ',
       incorrectEffect: '-6 HP | +0.1 infección global | -4 pts individuales',
-      ignoreEffect: '+2 pts individuales por cautela | Sin recompensa'
+      ignoreEffect: '+2 pts individuales por cautela'
     }
   }
 ];
