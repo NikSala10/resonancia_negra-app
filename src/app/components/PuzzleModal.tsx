@@ -311,9 +311,8 @@ export function PuzzleModal({
                 </h3>
                 <p className="text-[#F3D8DF] text-lg leading-relaxed">
                   Como no se eligió ninguna opción a tiempo, se aplica la penalización
-                  automática del acertijo:
-                  <br />
-                  <strong>{challenge.puzzle.incorrectEffect}</strong>
+                  automática: <strong>-8 puntos individuales</strong> a cada jugador y{" "}
+                  <strong>-10 puntos grupales</strong>.
                 </p>
 
                 <button
