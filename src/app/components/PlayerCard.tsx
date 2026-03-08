@@ -11,11 +11,19 @@ type Player = {
   ammunition?: number;
 };
 
-type Props = {
-  player: Player;
+type SharedResources = {
+  plasmaShield: number;
+  sporeDetector: number;
+  medicalKit: number;
+  ammunition: number;
 };
 
-export function PlayerCard({ player }: Props) {
+type Props = {
+  player: Player;
+  resources: SharedResources;
+};
+
+export function PlayerCard({ player, resources }: Props) {
   const hpPct = useMemo(() => {
     const max = Math.max(1, player.maxHp ?? 1);
     return Math.min(100, Math.max(0, (player.hp / max) * 100));
@@ -47,10 +55,10 @@ export function PlayerCard({ player }: Props) {
       ? "bg-[#B89726]/15 text-[#FCFFBA] border-[#B89726]/30"
       : "bg-[#0D3B2A]/30 text-[#7CFFB2] border-[#1F8A5B]/40";
 
-  const resources = [
-    { label: "Escudo Plasma", value: 1, color: "#11A1AB" },
-    { label: "Det. Esporas", value: 1, color: "#F4B52C" },
-    { label: "Kit Médico", value: 1, color: "#22C55E" },
+  const resourceCards = [
+    { label: "Escudo Plasma", value: resources.plasmaShield, color: "#11A1AB" },
+    { label: "Det. Esporas", value: resources.sporeDetector, color: "#F4B52C" },
+    { label: "Kit Médico", value: resources.medicalKit, color: "#22C55E" },
   ];
 
   return (
@@ -61,11 +69,8 @@ export function PlayerCard({ player }: Props) {
         boxShadow: `0 0 0 1px ${accent}22 inset`,
       }}
     >
-      {/* HEADER */}
       <div className="flex items-start justify-between">
         <div className="flex-1">
-
-          {/* Nombre + puntos */}
           <div className="flex items-center gap-5">
             <h3 className="text-[32px] font-bold text-[#D9E4F2] leading-none">
               {player.name}
@@ -82,7 +87,6 @@ export function PlayerCard({ player }: Props) {
             </div>
           </div>
 
-          {/* Rol */}
           <p
             className="mt-1 text-[16px] uppercase tracking-[0.2em] font-semibold"
             style={{ color: accent }}
@@ -91,7 +95,6 @@ export function PlayerCard({ player }: Props) {
           </p>
         </div>
 
-        {/* Estado */}
         <div
           className={`rounded-md border px-3 py-1 text-[14px] font-semibold ${statusClass}`}
         >
@@ -102,7 +105,6 @@ export function PlayerCard({ player }: Props) {
         </div>
       </div>
 
-      {/* HP */}
       <div className="mt-6">
         <div className="flex items-center justify-between">
           <span className="text-[14px] uppercase tracking-[0.18em] text-white/40">
@@ -129,17 +131,15 @@ export function PlayerCard({ player }: Props) {
         </div>
       </div>
 
-      {/* Divider */}
       <div className="my-5 h-px bg-white/10" />
 
-      {/* Recursos */}
       <div>
         <div className="text-[13px] uppercase tracking-[0.22em] text-white/40 mb-2">
-          Recursos
+          Recursos del grupo
         </div>
 
         <div className="space-y-2">
-          {resources.map((resource) => (
+          {resourceCards.map((resource) => (
             <div
               key={resource.label}
               className="flex items-center justify-between rounded-md border px-3 py-2"
@@ -173,11 +173,10 @@ export function PlayerCard({ player }: Props) {
         </div>
       </div>
 
-      {/* Munición */}
       {typeof player.ammunition === "number" && (
         <div className="mt-4">
           <div className="text-[13px] uppercase tracking-[0.22em] text-white/40 mb-2">
-            Munición
+            Munición personal
           </div>
 
           <div

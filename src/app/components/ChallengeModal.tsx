@@ -1,25 +1,30 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
-  X,
   Clock3,
   Shield,
   TriangleAlert,
   Dice5,
   Check,
-  ChevronRight,
 } from "lucide-react";
 import { Challenge } from "../data/challengesData";
-import { Button } from "./ui/button";
+
+interface ChallengeCompletePayload {
+  challengeId: number;
+  optionIndex?: number;
+  subOptionIndex?: number | null;
+  d20?: number | null;
+  timedOut?: boolean;
+}
 
 interface ChallengeModalProps {
   challenge: Challenge;
   isOpen: boolean;
   onClose: () => void;
-  onComplete: () => void;
+  onComplete: (payload: ChallengeCompletePayload) => void;
 }
 
-const DEFAULT_SECONDS = 100;
+const DEFAULT_SECONDS = 60;
 
 export function ChallengeModal({
   challenge,
@@ -52,6 +57,16 @@ export function ChallengeModal({
     return () => window.clearInterval(timer);
   }, [isOpen, secondsLeft]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    if (secondsLeft !== 0) return;
+
+    onComplete({
+      challengeId: challenge.id,
+      timedOut: true,
+    });
+  }, [secondsLeft, isOpen, challenge.id, onComplete]);
+
   const progressPct = useMemo(() => {
     return Math.max(0, Math.min(100, (secondsLeft / DEFAULT_SECONDS) * 100));
   }, [secondsLeft]);
@@ -60,26 +75,12 @@ export function ChallengeModal({
   const ss = String(secondsLeft % 60).padStart(2, "0");
 
   const requiresD20 = useMemo(() => {
-    const text = `${challenge.rule ?? ""} ${challenge.event ?? ""} ${challenge.options
-      ?.map((o) => `${o.label} ${o.effects}`)
-      .join(" ") ?? ""}`.toLowerCase();
+    const text = `${challenge.rule ?? ""} ${challenge.event ?? ""} ${
+      challenge.options?.map((o) => `${o.label} ${o.effects}`).join(" ") ?? ""
+    }`.toLowerCase();
 
     return text.includes("d20") || text.includes("dado");
   }, [challenge]);
-
-  const selectedOptionData =
-    selectedOption !== null ? challenge.options?.[selectedOption] : null;
-
-  const needsSubDecision = !!selectedOptionData?.subDecision;
-  const canSubmit =
-    selectedOption !== null &&
-    (!needsSubDecision || selectedSubOption !== null) &&
-    (!requiresD20 || selectedD20 !== null);
-
-  const handleComplete = () => {
-    if (!canSubmit) return;
-    onComplete();
-  };
 
   const getOptionAccent = (index: number) => {
     const palette = [
@@ -88,24 +89,21 @@ export function ChallengeModal({
         bar: "bg-[#11A1AB]",
         title: "text-[#11E7F7]",
         chip: "text-[#11E7F7] border-[#11A1AB]/35 bg-[#11A1AB]/10",
-        button:
-          "border-[#11A1AB]/50 text-[#11E7F7] hover:bg-[#11A1AB]/10",
+        button: "border-[#11A1AB]/50 text-[#11E7F7] hover:bg-[#11A1AB]/10",
       },
       {
         border: "border-[#B89726]/35",
         bar: "bg-[#B89726]",
         title: "text-[#F5DC3F]",
         chip: "text-[#F5DC3F] border-[#B89726]/35 bg-[#B89726]/10",
-        button:
-          "border-[#B89726]/50 text-[#F5DC3F] hover:bg-[#B89726]/10",
+        button: "border-[#B89726]/50 text-[#F5DC3F] hover:bg-[#B89726]/10",
       },
       {
         border: "border-[#8B5CF6]/35",
         bar: "bg-[#8B5CF6]",
         title: "text-[#A78BFA]",
         chip: "text-[#A78BFA] border-[#8B5CF6]/35 bg-[#8B5CF6]/10",
-        button:
-          "border-[#8B5CF6]/50 text-[#A78BFA] hover:bg-[#8B5CF6]/10",
+        button: "border-[#8B5CF6]/50 text-[#A78BFA] hover:bg-[#8B5CF6]/10",
       },
     ];
 
@@ -131,7 +129,6 @@ export function ChallengeModal({
             className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6"
           >
             <div className="w-full max-w-5xl max-h-[92vh] overflow-y-auto rounded-2xl border border-white/10 bg-[#050B12]/95 shadow-[0_0_0_1px_rgba(255,255,255,0.03)]">
-              {/* TIMER */}
               <div className="sticky top-0 z-20 bg-[#050B12]/95 backdrop-blur-md px-5 md:px-6 pt-5 pb-4 border-b border-white/8">
                 <div className="rounded-lg border border-white/10 bg-[#08131B]/95 px-4 py-3">
                   <div className="flex items-center gap-4">
@@ -162,7 +159,6 @@ export function ChallengeModal({
                 </div>
               </div>
 
-              {/* HEADER */}
               <div className="px-5 md:px-6 pt-5 md:pt-6">
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0">
@@ -184,7 +180,6 @@ export function ChallengeModal({
                 </div>
               </div>
 
-              {/* EVENTO */}
               <div className="px-5 md:px-6 pt-5">
                 <div className="rounded-xl border border-[#B89726]/25 bg-[#08131B]/95 overflow-hidden">
                   <div className="h-full flex">
@@ -201,7 +196,6 @@ export function ChallengeModal({
                 </div>
               </div>
 
-              {/* REGLA */}
               {challenge.rule && (
                 <div className="px-5 md:px-6 pt-4">
                   <div className="rounded-xl border border-[#9F1B0B]/25 bg-[#120A10]/95 px-5 py-4">
@@ -220,7 +214,6 @@ export function ChallengeModal({
                 </div>
               )}
 
-              {/* D20 */}
               {requiresD20 && (
                 <div className="px-5 md:px-6 pt-5">
                   <div className="flex items-center gap-3 mb-3">
@@ -253,7 +246,6 @@ export function ChallengeModal({
                 </div>
               )}
 
-              {/* DECISIÓN */}
               {challenge.options && (
                 <div className="px-5 md:px-6 pt-5 pb-6 space-y-4">
                   <div className="flex items-center gap-3">
@@ -292,8 +284,14 @@ export function ChallengeModal({
                               </h3>
                             </div>
 
-                            <div className={`rounded-md border px-3 py-1 text-[13px] uppercase tracking-[0.18em] ${accent.chip}`}>
-                              {index === 0 ? "Calculado" : index === 1 ? "Riesgo alto" : "Pérdida segura"}
+                            <div
+                              className={`rounded-md border px-3 py-1 text-[13px] uppercase tracking-[0.18em] ${accent.chip}`}
+                            >
+                              {index === 0
+                                ? "Calculado"
+                                : index === 1
+                                ? "Riesgo alto"
+                                : "Pérdida segura"}
                             </div>
                           </div>
 
@@ -308,7 +306,6 @@ export function ChallengeModal({
                             ))}
                           </div>
 
-                          {/* subdecisión */}
                           {option.subDecision && (
                             <div className="mt-5 rounded-lg border border-white/10 bg-black/20 px-4 py-4">
                               <div className="text-[16px] text-[#FCFFBA] mb-3">
@@ -317,7 +314,10 @@ export function ChallengeModal({
 
                               <div className="space-y-2">
                                 {option.subDecision.options.map((subOpt, subIdx) => {
-                                  const subActive = selectedSubOption === subIdx;
+                                  const subActive =
+                                    selectedOption === index &&
+                                    selectedSubOption === subIdx;
+
                                   return (
                                     <button
                                       key={subIdx}
@@ -326,26 +326,19 @@ export function ChallengeModal({
                                         setSelectedSubOption(subIdx);
                                       }}
                                       className={[
-                                        "w-full rounded-lg border px-4 py-3 text-left transition",
+                                        "w-full text-left rounded-lg p-4 border transition",
                                         subActive
-                                          ? "border-[#11A1AB]/45 bg-[#11A1AB]/10"
-                                          : "border-white/10 bg-[#081018] hover:bg-white/5",
+                                          ? "bg-[#11A1AB]/10 border-[#11A1AB]"
+                                          : "bg-[#100605]/40 border-[#11A1AB]/20 hover:border-[#11A1AB]",
                                       ].join(" ")}
                                     >
-                                      <div className="flex items-center justify-between gap-3">
-                                        <div>
-                                          <div className="text-[20px] font-bold text-[#D9E4F2]">
-                                            {subOpt.label}
-                                          </div>
-                                          <div className="mt-1 text-[17px] text-white/65 whitespace-pre-line">
-                                            {subOpt.effects}
-                                          </div>
-                                        </div>
+                                      <h5 className="text-sm font-bold text-[#11A1AB] mb-1">
+                                        {subOpt.label}
+                                      </h5>
 
-                                        {subActive && (
-                                          <Check className="h-5 w-5 text-[#11E7F7] shrink-0" />
-                                        )}
-                                      </div>
+                                      <p className="text-xs text-[#FCFFBA]/70 whitespace-pre-line">
+                                        {subOpt.effects}
+                                      </p>
                                     </button>
                                   );
                                 })}
@@ -353,29 +346,58 @@ export function ChallengeModal({
                             </div>
                           )}
 
-                          <button
-                            onClick={() => {
-                              setSelectedOption(index);
-                              if (!option.subDecision) setSelectedSubOption(null);
-                            }}
-                            className={[
-                              "mt-5 w-full h-14 rounded-lg border font-bold text-[20px] tracking-[0.08em] transition",
-                              active
-                                ? accent.button + " bg-white/5"
-                                : "border-white/10 text-white/75 hover:bg-white/5",
-                            ].join(" ")}
-                          >
-                            {active ? "✓ OPCIÓN SELECCIONADA" : "✓ ELEGIR ESTA OPCIÓN"}
-                          </button>
+                          {!option.subDecision && (
+                            <button
+                              onClick={() => {
+                                if (requiresD20 && selectedD20 === null) return;
+
+                                onComplete({
+                                  challengeId: challenge.id,
+                                  optionIndex: index,
+                                  subOptionIndex: null,
+                                  d20: requiresD20 ? selectedD20 : null,
+                                });
+                              }}
+                              className={[
+                                "mt-5 w-full h-14 rounded-lg border font-bold text-[20px] tracking-[0.08em] transition",
+                                accent.button + " bg-white/5",
+                              ].join(" ")}
+                            >
+                              ✓ ELEGIR ESTA OPCIÓN
+                            </button>
+                          )}
+
+                          {option.subDecision && (
+                            <button
+                              onClick={() => {
+                                if (requiresD20 && selectedD20 === null) return;
+                                if (selectedOption !== index) return;
+                                if (selectedSubOption === null) return;
+
+                                onComplete({
+                                  challengeId: challenge.id,
+                                  optionIndex: index,
+                                  subOptionIndex: selectedSubOption,
+                                  d20: requiresD20 ? selectedD20 : null,
+                                });
+                              }}
+                              className={[
+                                "mt-5 w-full h-14 rounded-lg border font-bold text-[20px] tracking-[0.08em] transition",
+                                accent.button + " bg-white/5",
+                              ].join(" ")}
+                            >
+                              <span className="inline-flex items-center gap-2">
+                                <Check className="h-5 w-5" />
+                                CONFIRMAR DECISIÓN
+                              </span>
+                            </button>
+                          )}
                         </div>
                       </div>
                     );
                   })}
                 </div>
               )}
-
-              {/* FOOTER */}
-              
             </div>
           </motion.div>
         </>

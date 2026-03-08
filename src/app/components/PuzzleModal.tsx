@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
-  X,
   Clock3,
   CircleCheckBig,
   CircleX,
@@ -11,14 +10,22 @@ import {
 import { Challenge } from "../data/challengesData";
 import { Button } from "./ui/button";
 
+type PuzzleResult = "correct" | "incorrect" | "ignore";
+
+interface PuzzleCompletePayload {
+  challengeId: number;
+  result: PuzzleResult;
+  effectsText: string;
+}
+
 interface PuzzleModalProps {
   challenge: Challenge;
   isOpen: boolean;
   onClose: () => void;
-  onComplete: () => void;
+  onComplete: (payload: PuzzleCompletePayload) => void;
 }
 
-const DEFAULT_SECONDS = 29;
+const DEFAULT_SECONDS = 90;
 
 export function PuzzleModal({
   challenge,
@@ -46,6 +53,18 @@ export function PuzzleModal({
     return () => window.clearInterval(timer);
   }, [isOpen, secondsLeft]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    if (secondsLeft !== 0) return;
+    if (!challenge.puzzle) return;
+
+    onComplete({
+      challengeId: challenge.id,
+      result: "incorrect",
+      effectsText: challenge.puzzle.incorrectEffect,
+    });
+  }, [secondsLeft, isOpen, challenge, onComplete]);
+
   const mm = String(Math.floor(secondsLeft / 60)).padStart(2, "0");
   const ss = String(secondsLeft % 60).padStart(2, "0");
 
@@ -59,11 +78,27 @@ export function PuzzleModal({
   }, [canResolve, normalizedAnswer, realAnswer]);
 
   const handleResolve = () => {
-    onComplete();
+    if (!challenge.puzzle) return;
+
+    const isCorrect = normalizedAnswer === realAnswer;
+
+    onComplete({
+      challengeId: challenge.id,
+      result: isCorrect ? "correct" : "incorrect",
+      effectsText: isCorrect
+        ? challenge.puzzle.correctEffect
+        : challenge.puzzle.incorrectEffect,
+    });
   };
 
   const handleIgnore = () => {
-    onComplete();
+    if (!challenge.puzzle) return;
+
+    onComplete({
+      challengeId: challenge.id,
+      result: "ignore",
+      effectsText: challenge.puzzle.ignoreEffect,
+    });
   };
 
   if (!challenge.puzzle) return null;
@@ -87,7 +122,6 @@ export function PuzzleModal({
             className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6"
           >
             <div className="w-full max-w-4xl max-h-[92vh] overflow-y-auto rounded-2xl border border-white/10 bg-[#050B12]/95 shadow-[0_0_0_1px_rgba(255,255,255,0.03)]">
-              {/* TIMER */}
               <div className="sticky top-0 z-20 bg-[#050B12]/95 backdrop-blur-md px-5 md:px-6 pt-5 pb-4 border-b border-white/8">
                 <div className="rounded-lg border border-white/10 bg-[#08131B]/95 px-4 py-3">
                   <div className="flex items-center gap-4">
@@ -102,7 +136,10 @@ export function PuzzleModal({
                       <div
                         className="h-full rounded-full transition-all duration-500"
                         style={{
-                          width: `${Math.max(0, Math.min(100, (secondsLeft / DEFAULT_SECONDS) * 100))}%`,
+                          width: `${Math.max(
+                            0,
+                            Math.min(100, (secondsLeft / DEFAULT_SECONDS) * 100)
+                          )}%`,
                           background:
                             secondsLeft > 12
                               ? "linear-gradient(90deg, #B89726, #FF4D6D)"
@@ -118,7 +155,6 @@ export function PuzzleModal({
                 </div>
               </div>
 
-              {/* HEADER */}
               <div className="px-5 md:px-6 pt-6">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
@@ -126,12 +162,9 @@ export function PuzzleModal({
                       {challenge.title}
                     </h2>
                   </div>
-
-                  
                 </div>
               </div>
 
-              {/* EVENTO */}
               <div className="px-5 md:px-6 pt-5">
                 <div className="rounded-xl border border-[#8B5CF6]/25 bg-[#0A1020]/95 px-5 py-4">
                   <div className="text-[16px] uppercase tracking-[0.22em] text-[#A78BFA] mb-3">
@@ -143,7 +176,6 @@ export function PuzzleModal({
                 </div>
               </div>
 
-              {/* FRASE */}
               <div className="px-5 md:px-6 pt-4">
                 <div className="rounded-xl border border-[#8B5CF6]/20 bg-[#080B18]/95 px-5 py-4 text-center">
                   <p className="text-[20px] leading-[1.6] text-[#8B5CF6] whitespace-pre-line">
@@ -152,7 +184,6 @@ export function PuzzleModal({
                 </div>
               </div>
 
-              {/* ACERTIJO */}
               <div className="px-5 md:px-6 pt-4">
                 <div className="rounded-xl border border-[#3B4A70]/25 bg-[#08131B]/95 px-5 py-5">
                   <div className="text-[16px] uppercase tracking-[0.22em] text-[#8B5CF6] mb-4">
@@ -165,7 +196,6 @@ export function PuzzleModal({
                 </div>
               </div>
 
-              {/* RESULTADOS */}
               <div className="px-5 md:px-6 pt-5">
                 <div className="grid md:grid-cols-3 gap-3">
                   <div className="rounded-lg border border-[#22C55E]/30 bg-[#08131B]/95 px-4 py-4">
@@ -206,7 +236,6 @@ export function PuzzleModal({
                 </div>
               </div>
 
-              {/* INPUT */}
               <div className="px-5 md:px-6 pt-5 pb-6">
                 <div className="rounded-xl border border-[#8B5CF6]/18 bg-[#08131B]/95 px-4 py-4">
                   <div className="flex items-center gap-2 mb-3">
@@ -239,7 +268,6 @@ export function PuzzleModal({
                 )}
               </div>
 
-              {/* FOOTER */}
               <div className="sticky bottom-0 z-20 bg-[#050B12]/95 backdrop-blur-md border-t border-white/8 px-5 md:px-6 py-4">
                 <div className="grid grid-cols-2 gap-3">
                   <Button

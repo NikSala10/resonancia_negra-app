@@ -71,7 +71,8 @@ export default function Podium() {
 
   // 2) Reset de retos (confirmados y pendientes)
   localStorage.removeItem("completedChallenges");
-  localStorage.removeItem("pendingChallenges");
+  localStorage.removeItem("autoChallengeShown_right");
+localStorage.removeItem("autoChallengeShown_left");
 
   // 3) Nueva sesión (para separar partidas)
   localStorage.setItem("gameSessionId", String(Date.now()));

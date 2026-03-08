@@ -62,24 +62,11 @@ const rightPathChallenges: Challenge[] = [
       },
       {
         label: 'No sacrificar un Kit Médico',
-        effects: 'Sin cambios | No obtienen pista'
+        effects: 'Sin cambios '
       },
       {
         label: 'Enviar a un jugador',
-        effects: 'El jugador enviado pierde -10 HP | Gana +3 pts individuales | Clara recibe una pista',
-        subDecision: {
-          description: 'Clara debe decidir qué hacer con la pista:',
-          options: [
-            {
-              label: 'Compartir la pista',
-              effects: '+5 pts grupales | +2 pts individuales para todos | Clara +3 pts extra'
-            },
-            {
-              label: 'Ocultar la pista',
-              effects: 'Clara -5 pts individuales | 0 pts grupales'
-            }
-          ]
-        }
+        effects: 'El jugador enviado pierde -10 HP | Gana +3 pts individuales ',
       }
     ]
   },
@@ -239,7 +226,7 @@ const leftPathChallenges: Challenge[] = [
     options: [
       {
         label: 'Descifrar señal (Adrián + Leni)',
-        effects: 'Adrián gasta 1 Kit Médico | Leni gasta 1 munición si hay combate | Obtienen pista clave | +15 pts grupales'
+        effects: 'Adrián gasta 1 Kit Médico | Leni gasta 1 munición si hay combate | +15 pts grupales'
       },
       {
         label: 'Descifrar sin Adrián',
@@ -247,7 +234,7 @@ const leftPathChallenges: Challenge[] = [
       },
       {
         label: 'Ignorar señal',
-        effects: 'No obtienen pista'
+        effects: ''
       }
     ]
   },
