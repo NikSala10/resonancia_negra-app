@@ -26,6 +26,7 @@ interface PuzzleModalProps {
 }
 
 const DEFAULT_SECONDS = 90;
+const PUZZLE_TIMEOUT_EFFECT = "-8 pts individuales cada jugador | -10 pts grupales";
 
 export function PuzzleModal({
   challenge,
@@ -102,14 +103,12 @@ export function PuzzleModal({
   };
 
   const handleTimeoutAcknowledge = () => {
-    if (!challenge.puzzle) return;
-
     setShowTimeoutNotice(false);
 
     onComplete({
       challengeId: challenge.id,
       result: "incorrect",
-      effectsText: challenge.puzzle.incorrectEffect,
+      effectsText: PUZZLE_TIMEOUT_EFFECT,
     });
   };
 
