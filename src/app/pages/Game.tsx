@@ -9,6 +9,7 @@ import { ChallengeModal } from "../components/ChallengeModal";
 import { PuzzleModal } from "../components/PuzzleModal";
 import { getChallengesBySide } from "../data/challengesData";
 import { applyChallengeEffects } from "../../lib/challengeEffects";
+import { BoardTileModal } from "../components/BoardTileModal";
 
 
 const COMPLETED_KEY = "completedChallenges";
@@ -45,6 +46,8 @@ export default function Game() {
 
   const [selectedChallenge, setSelectedChallenge] = useState<number | null>(null);
   const [showPuzzle, setShowPuzzle] = useState(false);
+  const [showBoardTileModal, setShowBoardTileModal] = useState(false);
+  const [showEndConfirm, setShowEndConfirm] = useState(false);
 
   const challenges = useMemo(
     () => (currentPath ? getChallengesBySide(currentPath) : []),
@@ -215,6 +218,49 @@ export default function Game() {
     saveGame();
     navigate("/podium");
   };
+  const handleBoardTileEffect = (effect: string) => {
+  if (effect === "allLose2Hp") {
+    players.forEach((player) => {
+      updatePlayerHP(player.id, Math.max(0, player.hp - 2));
+    });
+  }
+
+  if (effect === "loseResourceAnd5Group") {
+    const availableResources = [
+      resources.plasmaShield > 0 ? "plasmaShield" : null,
+      resources.sporeDetector > 0 ? "sporeDetector" : null,
+      resources.medicalKit > 0 ? "medicalKit" : null,
+      resources.ammunition > 0 ? "ammunition" : null,
+    ].filter(Boolean) as ("plasmaShield" | "sporeDetector" | "medicalKit" | "ammunition")[];
+
+    if (availableResources.length > 0) {
+      const randomResource =
+        availableResources[Math.floor(Math.random() * availableResources.length)];
+
+      setResourceAbsolute(randomResource, resources[randomResource] - 1);
+    }
+
+    setGroupPointsAbsolute(groupPoints - 5);
+  }
+
+  if (effect === "gain2Group") {
+    setGroupPointsAbsolute(groupPoints + 2);
+  }
+
+  setShowBoardTileModal(false);
+};
+const boardTileOptions =
+  currentPath === "left"
+    ? [
+        { id: 1, label: "Todos pierden 2 HP", effect: "allLose2Hp" },
+        { id: 2, label: "Perder un recurso y perder 5 pts grupales", effect: "loseResourceAnd5Group" },
+        { id: 3, label: "Ganan 2 pts grupales", effect: "gain2Group" },
+      ]
+    : [
+        { id: 1, label: "Perder un recurso y perder 5 pts grupales", effect: "loseResourceAnd5Group" },
+        { id: 2, label: "Todos pierden 2 HP", effect: "allLose2Hp" },
+        { id: 3, label: "Ganan 2 pts grupales", effect: "gain2Group" },
+      ];
 
   return (
     <div
@@ -231,13 +277,27 @@ export default function Game() {
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-center mb-6 relative max-w-[700px] mx-auto"
+        className="text-center mb-18 relative max-w-[700px] mx-auto"
       >
         <p className="text-[#B89726] text-xl font-['Mansalva']">
           CAMINO {currentPath === "right" ? "DERECHO" : "IZQUIERDO"}
         </p>
 
-        <div className="absolute right-0 top-1/2 -translate-y-1/2">
+        <div className="absolute right-0 top-1/2 -translate-y-1/2 mt-18 gap-4 flex">
+        <Button
+          onClick={() => setShowBoardTileModal(true)}
+          className="
+            h-14
+            bg-[#11A1AB]
+            hover:bg-[#11A1AB]/85
+            text-[#100605]
+            font-bold
+            text-[22px]
+            tracking-[0.08em]
+          "
+        >
+          CASILLA TABLERO
+        </Button>
           <Button
             onClick={() => navigate("/retos")}
             className="
@@ -246,7 +306,6 @@ export default function Game() {
               hover:bg-[#11A1AB]/85
               text-[#100605]
               font-bold text-2xl
-              tracking-wider
               shadow-[0_0_22px_rgba(17,161,171,0.25)]
             "
           >
@@ -422,7 +481,7 @@ export default function Game() {
 
             <div className="px-4 pb-4 pt-1 grid grid-cols-1 mt-4 gap-3">
               <Button
-                onClick={handleEndGame}
+                onClick={() => setShowEndConfirm(true)}
                 className="
                   h-14
                   bg-[#2A0912]
@@ -460,6 +519,50 @@ export default function Game() {
           onComplete={handlePuzzleComplete}
         />
       )}
+      <BoardTileModal
+        isOpen={showBoardTileModal}
+        onClose={() => setShowBoardTileModal(false)}
+        onSelect={handleBoardTileEffect}
+        options={boardTileOptions}
+      />
+      {showEndConfirm && (
+  <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+    <div
+      className="absolute inset-0 bg-black/75 backdrop-blur-sm"
+      onClick={() => setShowEndConfirm(false)}
+    />
+
+    <div className="relative w-full max-w-md rounded-2xl border border-[#9F1B0B]/30 bg-[#120A10]/95 p-6 shadow-[0_0_30px_rgba(0,0,0,0.35)]">
+      <h3 className="text-4xl font-bold text-[#FF8EA2] mb-3">
+        ¿Seguro que quieres finalizar?
+      </h3>
+
+      <p className="text-[#F3D8DF] text-3xl leading-relaxed">
+        Si terminas la partida ahora, se cerrará el juego actual y pasarás al
+        podio.
+      </p>
+
+      <div className="mt-6 grid grid-cols-2 gap-3">
+        <button
+          onClick={() => setShowEndConfirm(false)}
+          className="h-15 rounded-lg text-3xl border border-white/10 bg-[#081018] text-white/70 font-bold hover:bg-white/5 transition"
+        >
+          Cancelar
+        </button>
+
+        <button
+          onClick={() => {
+            setShowEndConfirm(false);
+            handleEndGame();
+          }}
+          className="h-15 rounded-lg text-3xl border border-[#9F1B0B]/40 bg-[#2A0912] text-[#FF4D6D] font-bold hover:bg-[#3A0C18] transition"
+        >
+          Sí, finalizar
+        </button>
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 }

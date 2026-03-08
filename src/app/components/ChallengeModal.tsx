@@ -27,7 +27,7 @@ interface ChallengeModalProps {
   onComplete: (payload: ChallengeCompletePayload) => void;
 }
 
-const DEFAULT_SECONDS = 60;
+const DEFAULT_SECONDS = 10;
 
 export function ChallengeModal({
   challenge,

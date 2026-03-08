@@ -127,6 +127,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     loadGame();
   }, []);
+  useEffect(() => {
+  const nextCasualties = players.filter((player) => player.hp <= 0).length;
+  setCasualties(nextCasualties);
+}, [players]);
 
   const updatePlayerHP = (playerId: string, hp: number) => {
     setPlayers((prev) =>
@@ -158,7 +162,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
   };
 
   const setGroupPointsAbsolute = (points: number) => {
-    setGroupPoints(Math.max(0, points));
+    setGroupPoints(points);
   };
 
   const setResourceAbsolute = (
@@ -298,7 +302,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
       setPlayers(safePlayers);
       setGroupPoints(
-        typeof data.groupPoints === "number" ? Math.max(0, data.groupPoints) : 0
+        typeof data.groupPoints === "number" ? data.groupPoints : 0
       );
       setResources(safeResources);
       setCurrentPathState(safeCurrentPath);
