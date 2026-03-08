@@ -8,6 +8,7 @@ import {
   Check,
 } from "lucide-react";
 import { Challenge } from "../data/challengesData";
+import { useGame } from "../context/GameContext";
 
 interface ChallengeCompletePayload {
   challengeId: number;
@@ -15,6 +16,8 @@ interface ChallengeCompletePayload {
   subOptionIndex?: number | null;
   d20?: number | null;
   timedOut?: boolean;
+  selectedPlayerId?: string | null;
+  protectedPlayerIds?: string[];
 }
 
 interface ChallengeModalProps {
@@ -32,10 +35,15 @@ export function ChallengeModal({
   onClose,
   onComplete,
 }: ChallengeModalProps) {
+  const { players } = useGame();
+
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [selectedSubOption, setSelectedSubOption] = useState<number | null>(null);
   const [selectedD20, setSelectedD20] = useState<number | null>(null);
+  const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
   const [secondsLeft, setSecondsLeft] = useState(DEFAULT_SECONDS);
+  const [showTimeoutNotice, setShowTimeoutNotice] = useState(false);
+  const [protectedPlayerIds, setProtectedPlayerIds] = useState<string[]>([]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -43,8 +51,19 @@ export function ChallengeModal({
     setSelectedOption(null);
     setSelectedSubOption(null);
     setSelectedD20(null);
+    setSelectedPlayerId(null);
+    setProtectedPlayerIds([]);
     setSecondsLeft(DEFAULT_SECONDS);
+    setShowTimeoutNotice(false);
   }, [isOpen, challenge.id]);
+
+  const optionNeedsProtectedPlayers = (optionIndex: number) => {
+    const option = challenge.options?.[optionIndex];
+    if (!option) return false;
+
+    const text = `${option.label} ${option.effects}`.toLowerCase();
+    return text.includes("3 protegidos");
+  };
 
   useEffect(() => {
     if (!isOpen) return;
@@ -61,11 +80,8 @@ export function ChallengeModal({
     if (!isOpen) return;
     if (secondsLeft !== 0) return;
 
-    onComplete({
-      challengeId: challenge.id,
-      timedOut: true,
-    });
-  }, [secondsLeft, isOpen, challenge.id, onComplete]);
+    setShowTimeoutNotice(true);
+  }, [secondsLeft, isOpen]);
 
   const progressPct = useMemo(() => {
     return Math.max(0, Math.min(100, (secondsLeft / DEFAULT_SECONDS) * 100));
@@ -74,13 +90,27 @@ export function ChallengeModal({
   const mm = String(Math.floor(secondsLeft / 60)).padStart(2, "0");
   const ss = String(secondsLeft % 60).padStart(2, "0");
 
-  const requiresD20 = useMemo(() => {
-    const text = `${challenge.rule ?? ""} ${challenge.event ?? ""} ${
-      challenge.options?.map((o) => `${o.label} ${o.effects}`).join(" ") ?? ""
-    }`.toLowerCase();
+  const optionRequiresD20 = (optionIndex: number) => {
+    const option = challenge.options?.[optionIndex];
+    if (!option) return false;
 
+    const text = `${option.label} ${option.effects}`.toLowerCase();
     return text.includes("d20") || text.includes("dado");
-  }, [challenge]);
+  };
+
+  const optionNeedsPlayerSelection = (optionIndex: number) => {
+    const option = challenge.options?.[optionIndex];
+    if (!option) return false;
+
+    const text = `${option.label} ${option.effects}`.toLowerCase();
+
+    return (
+      text.includes("voluntario") ||
+      text.includes("jugador enviado") ||
+      text.includes("enviar a un jugador") ||
+      text.includes("un jugador se ofrece")
+    );
+  };
 
   const getOptionAccent = (index: number) => {
     const palette = [
@@ -214,38 +244,6 @@ export function ChallengeModal({
                 </div>
               )}
 
-              {requiresD20 && (
-                <div className="px-5 md:px-6 pt-5">
-                  <div className="flex items-center gap-3 mb-3">
-                    <Dice5 className="h-5 w-5 text-[#F5DC3F]" />
-                    <div className="text-[18px] uppercase tracking-[0.22em] text-[#F5DC3F] font-semibold">
-                      Resultado del D20
-                    </div>
-                    <div className="h-px flex-1 bg-[#F5DC3F]/25" />
-                  </div>
-
-                  <div className="grid grid-cols-5 md:grid-cols-10 gap-2">
-                    {Array.from({ length: 20 }, (_, i) => i + 1).map((value) => {
-                      const active = selectedD20 === value;
-                      return (
-                        <button
-                          key={value}
-                          onClick={() => setSelectedD20(value)}
-                          className={[
-                            "h-12 rounded-lg border text-[20px] font-bold tabular-nums transition",
-                            active
-                              ? "border-[#F5DC3F] bg-[#B89726]/15 text-[#F5DC3F] shadow-[0_0_16px_rgba(184,151,38,0.22)]"
-                              : "border-white/10 bg-[#081018] text-[#D9E4F2] hover:bg-white/5",
-                          ].join(" ")}
-                        >
-                          {value}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
               {challenge.options && (
                 <div className="px-5 md:px-6 pt-5 pb-6 space-y-4">
                   <div className="flex items-center gap-3">
@@ -259,6 +257,9 @@ export function ChallengeModal({
                   {challenge.options.map((option, index) => {
                     const accent = getOptionAccent(index);
                     const active = selectedOption === index;
+                    const needsD20 = optionRequiresD20(index);
+                    const needsPlayer = optionNeedsPlayerSelection(index);
+                    const needsProtectedPlayers = optionNeedsProtectedPlayers(index);
 
                     return (
                       <div
@@ -283,16 +284,6 @@ export function ChallengeModal({
                                 {option.label}
                               </h3>
                             </div>
-
-                            <div
-                              className={`rounded-md border px-3 py-1 text-[13px] uppercase tracking-[0.18em] ${accent.chip}`}
-                            >
-                              {index === 0
-                                ? "Calculado"
-                                : index === 1
-                                ? "Riesgo alto"
-                                : "Pérdida segura"}
-                            </div>
                           </div>
 
                           <div className="mt-4 space-y-2">
@@ -306,39 +297,33 @@ export function ChallengeModal({
                             ))}
                           </div>
 
-                          {option.subDecision && (
-                            <div className="mt-5 rounded-lg border border-white/10 bg-black/20 px-4 py-4">
+                          {needsPlayer && (
+                            <div className="mt-5">
                               <div className="text-[16px] text-[#FCFFBA] mb-3">
-                                {option.subDecision.description}
+                                Elige el jugador
                               </div>
 
-                              <div className="space-y-2">
-                                {option.subDecision.options.map((subOpt, subIdx) => {
-                                  const subActive =
-                                    selectedOption === index &&
-                                    selectedSubOption === subIdx;
-
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                {players.map((player) => {
+                                  const activePlayer = selectedPlayerId === player.id;
                                   return (
                                     <button
-                                      key={subIdx}
+                                      key={player.id}
                                       onClick={() => {
                                         setSelectedOption(index);
-                                        setSelectedSubOption(subIdx);
+                                        setSelectedPlayerId(player.id);
                                       }}
                                       className={[
-                                        "w-full text-left rounded-lg p-4 border transition",
-                                        subActive
-                                          ? "bg-[#11A1AB]/10 border-[#11A1AB]"
-                                          : "bg-[#100605]/40 border-[#11A1AB]/20 hover:border-[#11A1AB]",
+                                        "rounded-lg border px-4 py-3 text-left transition",
+                                        activePlayer
+                                          ? "border-[#11A1AB] bg-[#11A1AB]/10"
+                                          : "border-white/10 bg-black/20 hover:border-[#11A1AB]",
                                       ].join(" ")}
                                     >
-                                      <h5 className="text-sm font-bold text-[#11A1AB] mb-1">
-                                        {subOpt.label}
-                                      </h5>
-
-                                      <p className="text-xs text-[#FCFFBA]/70 whitespace-pre-line">
-                                        {subOpt.effects}
-                                      </p>
+                                      <div className="text-[#D9E4F2] font-semibold">
+                                        {player.name}
+                                      </div>
+                                      <div className="text-white/50 text-sm">{player.role}</div>
                                     </button>
                                   );
                                 })}
@@ -346,52 +331,112 @@ export function ChallengeModal({
                             </div>
                           )}
 
-                          {!option.subDecision && (
-                            <button
-                              onClick={() => {
-                                if (requiresD20 && selectedD20 === null) return;
+                          {needsProtectedPlayers && (
+                            <div className="mt-5">
+                              <div className="text-[16px] text-[#FCFFBA] mb-3">
+                                Elige los 3 jugadores protegidos
+                              </div>
 
-                                onComplete({
-                                  challengeId: challenge.id,
-                                  optionIndex: index,
-                                  subOptionIndex: null,
-                                  d20: requiresD20 ? selectedD20 : null,
-                                });
-                              }}
-                              className={[
-                                "mt-5 w-full h-14 rounded-lg border font-bold text-[20px] tracking-[0.08em] transition",
-                                accent.button + " bg-white/5",
-                              ].join(" ")}
-                            >
-                              ✓ ELEGIR ESTA OPCIÓN
-                            </button>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                {players.map((player) => {
+                                  const isProtected = protectedPlayerIds.includes(player.id);
+
+                                  return (
+                                    <button
+                                      key={player.id}
+                                      onClick={() => {
+                                        setSelectedOption(index);
+
+                                        setProtectedPlayerIds((prev) => {
+                                          if (prev.includes(player.id)) {
+                                            return prev.filter((id) => id !== player.id);
+                                          }
+
+                                          if (prev.length >= 3) return prev;
+
+                                          return [...prev, player.id];
+                                        });
+                                      }}
+                                      className={[
+                                        "rounded-lg border px-4 py-3 text-left transition",
+                                        isProtected
+                                          ? "border-[#B89726] bg-[#B89726]/10"
+                                          : "border-white/10 bg-black/20 hover:border-[#B89726]",
+                                      ].join(" ")}
+                                    >
+                                      <div className="text-[#D9E4F2] font-semibold">{player.name}</div>
+                                      <div className="text-white/50 text-sm">{player.role}</div>
+                                    </button>
+                                  );
+                                })}
+                              </div>
+
+                              <div className="mt-2 text-sm text-white/50">
+                                Seleccionados: {protectedPlayerIds.length}/3
+                              </div>
+                            </div>
                           )}
 
-                          {option.subDecision && (
-                            <button
-                              onClick={() => {
-                                if (requiresD20 && selectedD20 === null) return;
-                                if (selectedOption !== index) return;
-                                if (selectedSubOption === null) return;
+                          {needsD20 && (
+                            <div className="mt-5">
+                              <div className="flex items-center gap-3 mb-3">
+                                <Dice5 className="h-5 w-5 text-[#F5DC3F]" />
+                                <div className="text-[18px] uppercase tracking-[0.22em] text-[#F5DC3F] font-semibold">
+                                  Resultado del D20
+                                </div>
+                                <div className="h-px flex-1 bg-[#F5DC3F]/25" />
+                              </div>
 
-                                onComplete({
-                                  challengeId: challenge.id,
-                                  optionIndex: index,
-                                  subOptionIndex: selectedSubOption,
-                                  d20: requiresD20 ? selectedD20 : null,
-                                });
-                              }}
-                              className={[
-                                "mt-5 w-full h-14 rounded-lg border font-bold text-[20px] tracking-[0.08em] transition",
-                                accent.button + " bg-white/5",
-                              ].join(" ")}
-                            >
-                              <span className="inline-flex items-center gap-2">
-                                <Check className="h-5 w-5" />
-                                CONFIRMAR DECISIÓN
-                              </span>
-                            </button>
+                              <div className="grid grid-cols-5 md:grid-cols-10 gap-2">
+                                {Array.from({ length: 20 }, (_, i) => i + 1).map((value) => {
+                                  const activeD20 = selectedD20 === value;
+                                  return (
+                                    <button
+                                      key={value}
+                                      onClick={() => {
+                                        setSelectedOption(index);
+                                        setSelectedD20(value);
+                                      }}
+                                      className={[
+                                        "h-12 rounded-lg border text-[20px] font-bold tabular-nums transition",
+                                        activeD20
+                                          ? "border-[#F5DC3F] bg-[#B89726]/15 text-[#F5DC3F]"
+                                          : "border-white/10 bg-[#081018] text-[#D9E4F2] hover:bg-white/5",
+                                      ].join(" ")}
+                                    >
+                                      {value}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
                           )}
+
+                          <button
+                            onClick={() => {
+                              if (needsD20 && selectedD20 === null) return;
+                              if (needsPlayer && !selectedPlayerId) return;
+                              if (needsProtectedPlayers && protectedPlayerIds.length !== 3) return;
+
+                              onComplete({
+                                challengeId: challenge.id,
+                                optionIndex: index,
+                                subOptionIndex: null,
+                                d20: needsD20 ? selectedD20 : null,
+                                selectedPlayerId: needsPlayer ? selectedPlayerId : null,
+                                protectedPlayerIds: needsProtectedPlayers ? protectedPlayerIds : [],
+                              });
+                            }}
+                            className={[
+                              "mt-5 w-full h-14 rounded-lg border font-bold text-[20px] tracking-[0.08em] transition",
+                              accent.button + " bg-white/5",
+                            ].join(" ")}
+                          >
+                            <span className="inline-flex items-center gap-2">
+                              <Check className="h-5 w-5" />
+                              ELEGIR ESTA OPCIÓN
+                            </span>
+                          </button>
                         </div>
                       </div>
                     );
@@ -400,6 +445,35 @@ export function ChallengeModal({
               )}
             </div>
           </motion.div>
+
+          {showTimeoutNotice && (
+            <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+              <div className="absolute inset-0 bg-black/70" />
+              <div className="relative w-full max-w-md rounded-2xl border border-[#9F1B0B]/30 bg-[#120A10] p-6">
+                <h3 className="text-2xl font-bold text-[#FF8EA2] mb-3">
+                  Tiempo agotado
+                </h3>
+                <p className="text-[#F3D8DF] text-lg leading-relaxed">
+                  Como no se eligió ninguna opción a tiempo, se aplica la penalización
+                  automática: <strong>-8 puntos individuales</strong> a cada jugador y{" "}
+                  <strong>-10 puntos grupales</strong>.
+                </p>
+
+                <button
+                  onClick={() => {
+                    setShowTimeoutNotice(false);
+                    onComplete({
+                      challengeId: challenge.id,
+                      timedOut: true,
+                    });
+                  }}
+                  className="mt-5 w-full h-12 rounded-lg border border-[#9F1B0B]/40 bg-[#2A0912] text-[#FF4D6D] font-bold"
+                >
+                  Entendido
+                </button>
+              </div>
+            </div>
+          )}
         </>
       )}
     </AnimatePresence>

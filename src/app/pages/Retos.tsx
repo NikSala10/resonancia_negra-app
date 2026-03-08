@@ -7,6 +7,7 @@ import { ChallengeModal } from "../components/ChallengeModal";
 import { PuzzleModal } from "../components/PuzzleModal";
 import { useGame } from "../context/GameContext";
 import { getChallengesBySide } from "../data/challengesData";
+import { applyChallengeEffects } from "../../lib/challengeEffects";
 
 const COMPLETED_KEY = "completedChallenges";
 
@@ -26,6 +27,7 @@ export default function Retos() {
     setResourceAbsolute,
     setCasualtiesAbsolute,
     setInfectionLevel,
+    updatePlayerAmmunition,
   } = useGame();
 
   const storedPath = localStorage.getItem("currentPath") as "left" | "right" | null;
@@ -53,218 +55,52 @@ export default function Retos() {
 
   const isDone = (id: number) => completedChallenges.includes(id);
 
-  const firstUnlockedChallengeId =
-    mainChallenges.find((challenge) => !completedChallenges.includes(challenge.id))
-      ?.id ?? null;
-
-  const isUnlocked = (id: number) => {
-    return completedChallenges.includes(id) || id === firstUnlockedChallengeId;
-  };
-
   const clamp = (val: number, min: number, max: number) =>
     Math.min(max, Math.max(min, val));
 
   const applyEffectsFromText = (
   effectsText: string,
+  optionLabel?: string,
   challengeTitle?: string,
-  d20?: number | null
+  d20?: number | null,
+  selectedPlayerId?: string | null,
+  protectedPlayerIds?: string[]
 ) => {
-  const text = effectsText.toLowerCase();
+  applyChallengeEffects({
+    effectsText,
+    optionLabel,
+    challengeTitle,
+    selectedPlayerId,
+    protectedPlayerIds,
+    d20,
 
-  let nextGroupPoints = groupPoints;
-  let nextInfection = infectionLevel;
-  let nextCasualties = casualties;
+    players,
+    groupPoints,
+    infectionLevel,
+    casualties,
+    resources,
 
-  const nextResources = {
-    plasmaShield: resources.plasmaShield,
-    sporeDetector: resources.sporeDetector,
-    medicalKit: resources.medicalKit,
-    ammunition: resources.ammunition,
-  };
-
-  const signedAmountFromMatch = (
-    rawValue: string,
-    verb?: string | null
-  ) => {
-    const numeric = Math.abs(Number(rawValue));
-
-    if (rawValue.startsWith("-")) return -numeric;
-    if (rawValue.startsWith("+")) return numeric;
-
-    const normalizedVerb = (verb ?? "").toLowerCase();
-
-    if (
-      normalizedVerb.includes("pierde") ||
-      normalizedVerb.includes("pierden") ||
-      normalizedVerb.includes("gasta") ||
-      normalizedVerb.includes("gastan")
-    ) {
-      return -numeric;
-    }
-
-    return numeric;
-  };
-
-  // ===== PUNTOS GRUPALES =====
-  const groupPointsMatches = [
-    ...effectsText.matchAll(/([+-]?\d+)\s*pts?\s*grupales?/gi),
-  ];
-  groupPointsMatches.forEach((m) => {
-    nextGroupPoints += Number(m[1]);
+    updatePlayerHP,
+    updatePlayerPoints,
+    updatePlayerAmmunition,
+    setGroupPointsAbsolute,
+    setResourceAbsolute,
+    setCasualtiesAbsolute,
+    setInfectionLevel,
   });
-
-  // ===== INFECCIÓN =====
-  const infectionMatches = [
-    ...effectsText.matchAll(/([+-]?\d+(?:\.\d+)?)\s*infecci[oó]n/gi),
-  ];
-  infectionMatches.forEach((m) => {
-    nextInfection += Number(m[1]);
-  });
-
-  // ===== BAJAS =====
-  const casualtiesMatches = [...effectsText.matchAll(/([+-]?\d+)\s*bajas?/gi)];
-  casualtiesMatches.forEach((m) => {
-    nextCasualties += Number(m[1]);
-  });
-
- // ===== TODOS PIERDEN / GANAN HP POR TEXTO =====
-// ===== TODOS PIERDEN / GANAN HP =====
-const allHpMatches = [
-  ...effectsText.matchAll(/todos?\s+(pierden|ganan)\s*([+-]?\d+)\s*hp/gi),
-];
-
-allHpMatches.forEach((m) => {
-  const action = m[1].toLowerCase();
-  const amount = Math.abs(Number(m[2])) * (action === "pierden" ? -1 : 1);
-
-  players.forEach((p) => {
-    updatePlayerHP(p.id, clamp(p.hp + amount, 0, p.maxHp));
-  });
-});
-
-// ===== HP INDIVIDUALES PARA TODOS =====
-const everyoneHpMatches = [
-  ...effectsText.matchAll(
-    /(^|\|)\s*([+-]?\d+)\s*hp(?:\s*individual(?:es)?)?(?:\s*(?:cada jugador|para todos))?\s*(?=\||$)/gi
-  ),
-];
-
-everyoneHpMatches.forEach((m) => {
-  const delta = Number(m[2]);
-
-  players.forEach((p) => {
-    updatePlayerHP(p.id, clamp(p.hp + delta, 0, p.maxHp));
-  });
-});
-
-// ===== PUNTOS INDIVIDUALES PARA TODOS =====
-const everyonePointsMatches = [
-  ...effectsText.matchAll(
-    /([+-]?\d+)\s*(?:pts?|puntos?)\s*individuales?(?:\s*(?:cada jugador|para todos))?/gi
-  ),
-];
-
-everyonePointsMatches.forEach((m) => {
-  const delta = Number(m[1]);
-  players.forEach((p) => updatePlayerPoints(p.id, delta));
-});
-
-  // ===== JUGADOR ESPECÍFICO =====
- players.forEach((p) => {
-  const safeName = p.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-
-  const hpMatch =
-    effectsText.match(
-      new RegExp(`${safeName}.*?(pierde|gana)?\\s*([+-]?\\d+)\\s*hp`, "i")
-    ) ||
-    effectsText.match(
-      new RegExp(`([+-]?\\d+)\\s*hp.*?${safeName}`, "i")
-    );
-
-  if (hpMatch) {
-    let delta = 0;
-
-    if (hpMatch[2]) {
-      const verb = (hpMatch[1] || "").toLowerCase();
-      const raw = hpMatch[2];
-      const amount = Math.abs(Number(raw));
-
-      if (verb === "pierde") {
-        delta = -amount;
-      } else if (verb === "gana") {
-        delta = amount;
-      } else {
-        delta = Number(raw);
-      }
-    } else if (hpMatch[1]) {
-      delta = Number(hpMatch[1]);
-    }
-
-    updatePlayerHP(p.id, clamp(p.hp + delta, 0, p.maxHp));
-  }
-});
-  // ===== RECURSOS =====
-  if (text.includes("pierden detector") || text.includes("pierde detector")) {
-    nextResources.sporeDetector = Math.max(0, nextResources.sporeDetector - 1);
-  }
-
-  if (text.includes("obtienen 1 kit médico") || text.includes("gana 1 kit médico")) {
-    nextResources.medicalKit += 1;
-  }
-
-  if (text.includes("gasta 1 kit médico") || text.includes("pierden 1 kit médico")) {
-    nextResources.medicalKit = Math.max(0, nextResources.medicalKit - 1);
-  }
-
-  if (
-    text.includes("obtiene escudo de plasma") ||
-    text.includes("ganan escudo de plasma")
-  ) {
-    nextResources.plasmaShield += 1;
-  }
-
-  const ammoMatches = [...effectsText.matchAll(/([+-]?\d+)\s*municiones?/gi)];
-  ammoMatches.forEach((m) => {
-    nextResources.ammunition = Math.max(
-      0,
-      nextResources.ammunition + Number(m[1])
-    );
-  });
-
-  // ===== D20 especial =====
-  if (d20 !== null && d20 !== undefined) {
-    if (challengeTitle?.toLowerCase().includes("puente inestable")) {
-      const keira = players.find((p) => p.name.toLowerCase().includes("keira"));
-      if (keira && d20 % 2 !== 0) {
-        updatePlayerHP(keira.id, clamp(keira.hp - 5, 0, keira.maxHp));
-      }
-    }
-  }
-
-  // ===== APLICAR TODO AL FINAL =====
-  setGroupPointsAbsolute(nextGroupPoints);
-  setInfectionLevel(Math.max(0, nextInfection));
-  setCasualtiesAbsolute(Math.max(0, nextCasualties));
-
-  setResourceAbsolute("plasmaShield", nextResources.plasmaShield);
-  setResourceAbsolute("sporeDetector", nextResources.sporeDetector);
-  setResourceAbsolute("medicalKit", nextResources.medicalKit);
-  setResourceAbsolute("ammunition", nextResources.ammunition);
 };
 
   const handleChallengeClick = (challengeId: number) => {
-    if (!isUnlocked(challengeId)) return;
     if (isDone(challengeId)) return;
-
     setSelectedChallenge(challengeId);
   };
 
   const handlePuzzleClick = () => {
-    if (!puzzleChallenge) return;
-    if (isDone(puzzleChallenge.id)) return;
+  if (!puzzleChallenge) return;
+  if (isDone(puzzleChallenge.id)) return;
 
-    setShowPuzzle(true);
-  };
+  setShowPuzzle(true);
+};
 
   const handleChallengeComplete = ({
     challengeId,
@@ -272,12 +108,16 @@ everyonePointsMatches.forEach((m) => {
     subOptionIndex,
     d20,
     timedOut,
+    selectedPlayerId,
+    protectedPlayerIds,
   }: {
     challengeId: number;
     optionIndex?: number;
     subOptionIndex?: number | null;
     d20?: number | null;
     timedOut?: boolean;
+    selectedPlayerId?: string | null;
+    protectedPlayerIds?: string[];
   }) => {
     if (timedOut) {
       players.forEach((p) => {
@@ -303,7 +143,14 @@ everyonePointsMatches.forEach((m) => {
     const option = challenge.options[optionIndex];
     if (!option) return;
 
-    applyEffectsFromText(option.effects, challenge.title, d20);
+    applyEffectsFromText(
+      option.effects,
+      option.label,
+      challenge.title,
+      d20,
+      selectedPlayerId,
+      protectedPlayerIds
+    );
 
     if (
       option.subDecision &&
@@ -313,8 +160,11 @@ everyonePointsMatches.forEach((m) => {
     ) {
       applyEffectsFromText(
         option.subDecision.options[subOptionIndex].effects,
+        option.subDecision.options[subOptionIndex].label,
         challenge.title,
-        d20
+        d20,
+        selectedPlayerId,
+        protectedPlayerIds
       );
     }
 

@@ -36,7 +36,7 @@ const rightPathChallenges: Challenge[] = [
     icon: 'hand',
     title: 'LABORATORIO ABANDONADO',
     tileBg: '/assets/1.svg',
-    event: 'El grupo encuentra una zona de investigación abandonada. Cada jugador obtiene 1 carta de recurso al azar.',
+    event: 'El grupo encuentra una zona de investigación abandonada. Cada jugador obtiene 1 recurso al azar.',
     options: [
       {
         label: 'Compartir su recurso con el grupo',
@@ -82,7 +82,7 @@ const rightPathChallenges: Challenge[] = [
     options: [
       {
         label: 'Sacrificar detector de esporas (Iván)',
-        effects: 'Pierden detector + 1 recurso a elección | Cruzan sin daño | +12 pts grupales | Iván +3 pts'
+        effects: 'Pierden detector + 1 recurso al azar | Cruzan sin daño | +12 pts grupales | Iván +3 pts'
       },
       {
         label: 'Cruzar sin protección',
@@ -90,7 +90,7 @@ const rightPathChallenges: Challenge[] = [
       },
       {
         label: 'Rodear zona',
-        effects: 'Pierden 1 turno | -3 pts grupales'
+        effects: '-3 pts grupales'
       }
     ]
   },
@@ -124,7 +124,7 @@ const rightPathChallenges: Challenge[] = [
     options: [
       {
         label: 'Usar refugio de Leni',
-        effects: '3 protegidos | Los demás pierden -10 HP | +8 pts grupales | Los que quedan afuera +4 pts. Adrián puede usar Kit Médico para salvar a alguien (decisión estratégica)'
+        effects: '3 protegidos | Los demás pierden -10 HP | +8 pts grupales | Los que quedan afuera +4 pts. '
       },
       {
         label: 'Correr sin refugio',
@@ -234,7 +234,7 @@ const leftPathChallenges: Challenge[] = [
       },
       {
         label: 'Ignorar señal',
-        effects: ''
+        effects: '-15 pts grupales | +2 pts individuales por cautela'
       }
     ]
   },
@@ -266,12 +266,12 @@ const leftPathChallenges: Challenge[] = [
     type: 'puzzle',
     icon: 'help',
     title: 'EL SUSURRO DE LA SOMBRA',
-    tileBg: '/assets/tiles/acertijo.svg',
+    tileBg: '/assets/acertijo.svg',
     event: 'Encuentran un cilindro de cristal intacto. Dentro, una sustancia oscura se mueve como viva. Una inscripción aparece:',
     puzzle: {
       riddle: 'No tengo cuerpo, pero puedo envolver el mundo.\nNo tengo boca, pero puedo devorarte.\nNací del miedo y crezco en silencio.\nCuando me ignoras, me hago más fuerte.\n¿Qué soy?',
       answer: 'LA INFECCIÓN',
-      correctEffect: '+8 pts individuales | +6 pts grupales | Reduce -0.1 infección global | Obtiene carta: Antídoto Parcial',
+      correctEffect: '+8 pts individuales | +6 pts grupales | Reduce -0.1 infección global ',
       incorrectEffect: '-6 HP | +0.1 infección global | -4 pts individuales',
       ignoreEffect: '+2 pts individuales por cautela | Sin recompensa'
     }

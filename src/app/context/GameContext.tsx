@@ -150,7 +150,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         player.id === playerId
           ? {
               ...player,
-              points: Math.max(0, player.points + delta),
+              points: player.points + delta,
             }
           : player
       )
