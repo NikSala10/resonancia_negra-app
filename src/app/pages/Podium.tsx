@@ -13,6 +13,10 @@ import {
   Swords,
   Dna,
   Compass,
+  Shield,
+  HeartPulse,
+  Crosshair,
+  Lightbulb,
 } from "lucide-react";
 import { getChallengesBySide } from "../data/challengesData";
 
@@ -124,6 +128,17 @@ function ConfettiBurst() {
   );
 }
 
+type Accent = {
+  border: string;
+  text: string;
+  glow: string;
+  panel: string;
+  soft: string;
+  line: string;
+};
+
+type RoleIcon = React.ComponentType<{ className?: string }>;
+
 export default function Podium() {
   const navigate = useNavigate();
   const { players, groupPoints, resources, currentPath, resetGame } = useGame();
@@ -189,20 +204,24 @@ export default function Podium() {
     return [...players].sort((a, b) => b.points - a.points).slice(0, 3);
   }, [players]);
 
-  const getBadge = (points: number) => {
-    if (points >= 80) {
-      return { label: "MENCIÓN DE HONOR SUPREMA", color: "#B89726" };
-    }
-    if (points >= 65) {
-      return { label: "MENCIÓN DE HONOR", color: "#11A1AB" };
-    }
-    if (points >= 50) {
-      return { label: "RECONOCIMIENTO AL MÉRITO", color: "#9F1B0B" };
-    }
-    return null;
-  };
+  type Mention = {
+  label: string;
+  color: string;
+};
 
-  const getPodiumAccent = (index: number) => {
+const getMentionByPosition = (position: number): Mention => {
+  if (position === 0) {
+    return { label: "MENCIÓN DE HONOR SUPREMA", color: "#B89726" };
+  }
+
+  if (position === 1) {
+    return { label: "MENCIÓN DE HONOR", color: "#11A1AB" };
+  }
+
+  return { label: "RECONOCIMIENTO AL MÉRITO", color: "#9F1B0B" };
+};
+
+  const getPodiumAccent = (index: number): Accent => {
     if (index === 0) {
       return {
         border: "#B89726",
@@ -235,12 +254,83 @@ export default function Podium() {
     };
   };
 
-  const getTopIcon = (playerId?: string) => {
-    const id = (playerId ?? "").toLowerCase();
+  const getTopIcon = (role?: string): RoleIcon => {
+    const normalizedRole = (role ?? "").trim().toLowerCase();
 
-    if (id.includes("keira")) return Swords;
-    if (id.includes("adrian")) return Dna;
-    if (id.includes("leni")) return Compass;
+    if (
+      normalizedRole.includes("guerr") ||
+      normalizedRole.includes("luchad") ||
+      normalizedRole.includes("combat") ||
+      normalizedRole.includes("soldad") ||
+      normalizedRole.includes("ataque") ||
+      normalizedRole.includes("ofens")
+    ) {
+      return Swords;
+    }
+
+    if (
+      normalizedRole.includes("cient") ||
+      normalizedRole.includes("bio") ||
+      normalizedRole.includes("medic") ||
+      normalizedRole.includes("investig") ||
+      normalizedRole.includes("analist") ||
+      normalizedRole.includes("quím") ||
+      normalizedRole.includes("quim")
+    ) {
+      return Dna;
+    }
+
+    if (
+      normalizedRole.includes("explor") ||
+      normalizedRole.includes("rastread") ||
+      normalizedRole.includes("guía") ||
+      normalizedRole.includes("guia") ||
+      normalizedRole.includes("naveg") ||
+      normalizedRole.includes("recon")
+    ) {
+      return Compass;
+    }
+
+    if (
+      normalizedRole.includes("defens") ||
+      normalizedRole.includes("tanque") ||
+      normalizedRole.includes("prote") ||
+      normalizedRole.includes("guard") ||
+      normalizedRole.includes("escud")
+    ) {
+      return Shield;
+    }
+
+    if (
+      normalizedRole.includes("sanad") ||
+      normalizedRole.includes("cur") ||
+      normalizedRole.includes("apoyo") ||
+      normalizedRole.includes("soporte") ||
+      normalizedRole.includes("heal")
+    ) {
+      return HeartPulse;
+    }
+
+    if (
+      normalizedRole.includes("tirad") ||
+      normalizedRole.includes("franco") ||
+      normalizedRole.includes("punter") ||
+      normalizedRole.includes("sniper") ||
+      normalizedRole.includes("disparo")
+    ) {
+      return Crosshair;
+    }
+
+    if (
+      normalizedRole.includes("estrateg") ||
+      normalizedRole.includes("líder") ||
+      normalizedRole.includes("lider") ||
+      normalizedRole.includes("táct") ||
+      normalizedRole.includes("tact") ||
+      normalizedRole.includes("intel")
+    ) {
+      return Lightbulb;
+    }
 
     return Trophy;
   };
@@ -253,6 +343,7 @@ export default function Podium() {
     localStorage.setItem("gameSessionId", String(Date.now()));
     navigate("/path-decision");
   };
+
   const handleNewSesion = () => {
     resetGame();
     localStorage.removeItem("completedChallenges");
@@ -390,7 +481,8 @@ export default function Podium() {
                       (() => {
                         const player = topPlayers[1];
                         const accent = getPodiumAccent(1);
-                        const Icon = getTopIcon(player.id);
+                        const Icon = getTopIcon(player.role);
+                        const mention = getMentionByPosition(1);
 
                         return (
                           <>
@@ -420,6 +512,17 @@ export default function Podium() {
                                 style={{ color: accent.border }}
                               >
                                 {player.points} pts
+                              </div>
+
+                              <div className="text-sm md:text-base uppercase tracking-[0.14em] text-[#7AB6BE] mt-1">
+                                {player.role}
+                              </div>
+
+                              <div
+                                className="text-[10px] md:text-xs uppercase tracking-[0.18em] mt-2"
+                                style={{ color: mention.color }}
+                              >
+                                {mention.label}
                               </div>
                             </div>
 
@@ -451,7 +554,8 @@ export default function Podium() {
                       (() => {
                         const player = topPlayers[0];
                         const accent = getPodiumAccent(0);
-                        const Icon = getTopIcon(player.id);
+                        const Icon = getTopIcon(player.role);
+                        const mention = getMentionByPosition(0);
 
                         return (
                           <>
@@ -484,6 +588,17 @@ export default function Podium() {
                               >
                                 {player.points} pts
                               </div>
+
+                              <div className="text-sm md:text-base uppercase tracking-[0.14em] text-[#7AB6BE] mt-1">
+                                {player.role}
+                              </div>
+
+                              <div
+                                className="text-[10px] md:text-xs uppercase tracking-[0.18em] mt-2"
+                                style={{ color: mention.color }}
+                              >
+                                {mention.label}
+                              </div>
                             </div>
 
                             <div
@@ -500,7 +615,8 @@ export default function Podium() {
                                 className="text-7xl md:text-8xl font-bold leading-none"
                                 style={{
                                   color: "#FCFFBA",
-                                  textShadow: "0 0 18px rgba(184,151,38,0.55)",
+                                  textShadow:
+                                    "0 0 18px rgba(184,151,38,0.55)",
                                 }}
                               >
                                 1
@@ -517,7 +633,8 @@ export default function Podium() {
                       (() => {
                         const player = topPlayers[2];
                         const accent = getPodiumAccent(2);
-                        const Icon = getTopIcon(player.id);
+                        const Icon = getTopIcon(player.role);
+                        const mention = getMentionByPosition(2);
 
                         return (
                           <>
@@ -547,6 +664,17 @@ export default function Podium() {
                                 style={{ color: accent.border }}
                               >
                                 {player.points} pts
+                              </div>
+
+                              <div className="text-sm md:text-base uppercase tracking-[0.14em] text-[#7AB6BE] mt-1">
+                                {player.role}
+                              </div>
+
+                              <div
+                                className="text-[10px] md:text-xs uppercase tracking-[0.18em] mt-2"
+                                style={{ color: mention.color }}
+                              >
+                                {mention.label}
                               </div>
                             </div>
 
@@ -585,7 +713,7 @@ export default function Podium() {
 
               <div className="space-y-3 max-w-5xl mx-auto">
                 {topPlayers.map((player, index) => {
-                  const badge = getBadge(player.points);
+                  const mention = getMentionByPosition(index);
                   const accent = getPodiumAccent(index);
 
                   return (
@@ -623,14 +751,12 @@ export default function Podium() {
                             {player.name}
                           </div>
 
-                          {badge && (
-                            <div
-                              className="mt-1 text-[11px] md:text-[13px] font-semibold uppercase tracking-[0.22em]"
-                              style={{ color: badge.color }}
-                            >
-                              {badge.label}
-                            </div>
-                          )}
+                          <div
+                            className="mt-1 text-[11px] md:text-[13px] font-semibold uppercase tracking-[0.22em]"
+                            style={{ color: mention.color }}
+                          >
+                            {mention.label}
+                          </div>
 
                           <div className="mt-1 text-sm md:text-lg uppercase tracking-[0.14em] text-[#7AB6BE]">
                             {player.role}
