@@ -78,11 +78,10 @@ const rightPathChallenges: Challenge[] = [
     tileBg: '/assets/3.svg',
     zone: 'Área abierta contaminada',
     event: 'El detector marca nivel crítico. Adrian identifica que cruzar sin protección es peligroso. Ivan podría modificar el detector para crear un escudo temporal.',
-    rule: 'Si el grupo NO tiene detector de esporas: Todos pierden -5 HP.',
     options: [
       {
         label: 'Sacrificar detector de esporas (Iván)',
-        effects: 'Pierden detector + 1 recurso al azar | Cruzan sin daño | +12 pts grupales | Iván +3 pts'
+        effects: 'Pierden detector de esporas + 1 recurso al azar | Cruzan sin daño | +12 pts grupales | Iván +3 pts'
       },
       {
         label: 'Cruzar sin protección',

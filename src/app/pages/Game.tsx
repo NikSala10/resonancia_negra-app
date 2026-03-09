@@ -11,9 +11,14 @@ import { getChallengesBySide } from "../data/challengesData";
 import { applyChallengeEffects } from "../../lib/challengeEffects";
 import { BoardTileModal } from "../components/BoardTileModal";
 
-
 const COMPLETED_KEY = "completedChallenges";
 const AUTO_MODAL_KEY = "autoChallengeShown";
+
+type ResourceKey =
+  | "plasmaShield"
+  | "sporeDetector"
+  | "medicalKit"
+  | "ammunition";
 
 export default function Game() {
   const navigate = useNavigate();
@@ -83,8 +88,47 @@ export default function Game() {
 
   const selectedChallengeData = challenges.find((c) => c.id === selectedChallenge);
 
-  const clamp = (val: number, min: number, max: number) =>
-    Math.min(max, Math.max(min, val));
+  const availableResourcesForLoss = useMemo(() => {
+    const list: {
+      key: ResourceKey;
+      label: string;
+      amount: number;
+    }[] = [];
+
+    if (resources.plasmaShield > 0) {
+      list.push({
+        key: "plasmaShield",
+        label: "Escudo Plasma",
+        amount: resources.plasmaShield,
+      });
+    }
+
+    if (resources.sporeDetector > 0) {
+      list.push({
+        key: "sporeDetector",
+        label: "Detector de Esporas",
+        amount: resources.sporeDetector,
+      });
+    }
+
+    if (resources.medicalKit > 0) {
+      list.push({
+        key: "medicalKit",
+        label: "Kit Médico",
+        amount: resources.medicalKit,
+      });
+    }
+
+    if (resources.ammunition > 0) {
+      list.push({
+        key: "ammunition",
+        label: "Munición",
+        amount: resources.ammunition,
+      });
+    }
+
+    return list;
+  }, [resources]);
 
   const applyEffectsFromText = (
     effectsText: string,
@@ -218,49 +262,60 @@ export default function Game() {
     saveGame();
     navigate("/podium");
   };
-  const handleBoardTileEffect = (effect: string) => {
-  if (effect === "allLose2Hp") {
-    players.forEach((player) => {
-      updatePlayerHP(player.id, Math.max(0, player.hp - 2));
-    });
-  }
 
-  if (effect === "loseResourceAnd5Group") {
-    const availableResources = [
-      resources.plasmaShield > 0 ? "plasmaShield" : null,
-      resources.sporeDetector > 0 ? "sporeDetector" : null,
-      resources.medicalKit > 0 ? "medicalKit" : null,
-      resources.ammunition > 0 ? "ammunition" : null,
-    ].filter(Boolean) as ("plasmaShield" | "sporeDetector" | "medicalKit" | "ammunition")[];
+  const handleBoardTileEffect = (effect: string, resourceKey?: ResourceKey) => {
+    if (effect === "allLose2Hp") {
+      players.forEach((player) => {
+        updatePlayerHP(player.id, Math.max(0, player.hp - 2));
+      });
 
-    if (availableResources.length > 0) {
-      const randomResource =
-        availableResources[Math.floor(Math.random() * availableResources.length)];
-
-      setResourceAbsolute(randomResource, resources[randomResource] - 1);
+      setShowBoardTileModal(false);
+      return;
     }
 
-    setGroupPointsAbsolute(groupPoints - 5);
-  }
+    if (effect === "loseResourceAnd5Group") {
+      if (!resourceKey) {
+        return;
+      }
 
-  if (effect === "gain2Group") {
-    setGroupPointsAbsolute(groupPoints + 2);
-  }
+      if (resources[resourceKey] > 0) {
+        setResourceAbsolute(resourceKey, resources[resourceKey] - 1);
+      }
 
-  setShowBoardTileModal(false);
-};
-const boardTileOptions =
-  currentPath === "left"
-    ? [
-        { id: 1, label: "Todos pierden 2 HP", effect: "allLose2Hp" },
-        { id: 2, label: "Perder un recurso y perder 5 pts grupales", effect: "loseResourceAnd5Group" },
-        { id: 3, label: "Ganan 2 pts grupales", effect: "gain2Group" },
-      ]
-    : [
-        { id: 1, label: "Perder un recurso y perder 5 pts grupales", effect: "loseResourceAnd5Group" },
-        { id: 2, label: "Todos pierden 2 HP", effect: "allLose2Hp" },
-        { id: 3, label: "Ganan 2 pts grupales", effect: "gain2Group" },
-      ];
+      setGroupPointsAbsolute(groupPoints - 5);
+      setShowBoardTileModal(false);
+      return;
+    }
+
+    if (effect === "gain2Group") {
+      setGroupPointsAbsolute(groupPoints + 2);
+      setShowBoardTileModal(false);
+      return;
+    }
+
+    setShowBoardTileModal(false);
+  };
+
+  const boardTileOptions =
+    currentPath === "left"
+      ? [
+          { id: 1, label: "Todos pierden 2 HP", effect: "allLose2Hp" },
+          {
+            id: 2,
+            label: "Perder un recurso y perder 5 pts grupales",
+            effect: "loseResourceAnd5Group",
+          },
+          { id: 3, label: "Ganan 2 pts grupales", effect: "gain2Group" },
+        ]
+      : [
+          {
+            id: 1,
+            label: "Perder un recurso y perder 5 pts grupales",
+            effect: "loseResourceAnd5Group",
+          },
+          { id: 2, label: "Todos pierden 2 HP", effect: "allLose2Hp" },
+          { id: 3, label: "Ganan 2 pts grupales", effect: "gain2Group" },
+        ];
 
   return (
     <div
@@ -284,20 +339,21 @@ const boardTileOptions =
         </p>
 
         <div className="absolute right-0 top-1/2 -translate-y-1/2 mt-18 gap-4 flex">
-        <Button
-          onClick={() => setShowBoardTileModal(true)}
-          className="
-            h-14
-            bg-[#11A1AB]
-            hover:bg-[#11A1AB]/85
-            text-[#100605]
-            font-bold
-            text-[22px]
-            tracking-[0.08em]
-          "
-        >
-          CASILLA TABLERO
-        </Button>
+          <Button
+            onClick={() => setShowBoardTileModal(true)}
+            className="
+              h-14
+              bg-[#11A1AB]
+              hover:bg-[#11A1AB]/85
+              text-[#100605]
+              font-bold
+              text-[22px]
+              tracking-[0.08em]
+            "
+          >
+            CASILLA TABLERO
+          </Button>
+
           <Button
             onClick={() => navigate("/retos")}
             className="
@@ -519,50 +575,53 @@ const boardTileOptions =
           onComplete={handlePuzzleComplete}
         />
       )}
+
       <BoardTileModal
         isOpen={showBoardTileModal}
         onClose={() => setShowBoardTileModal(false)}
         onSelect={handleBoardTileEffect}
         options={boardTileOptions}
+        availableResources={availableResourcesForLoss}
       />
+
       {showEndConfirm && (
-  <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
-    <div
-      className="absolute inset-0 bg-black/75 backdrop-blur-sm"
-      onClick={() => setShowEndConfirm(false)}
-    />
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-black/75 backdrop-blur-sm"
+            onClick={() => setShowEndConfirm(false)}
+          />
 
-    <div className="relative w-full max-w-md rounded-2xl border border-[#9F1B0B]/30 bg-[#120A10]/95 p-6 shadow-[0_0_30px_rgba(0,0,0,0.35)]">
-      <h3 className="text-4xl font-bold text-[#FF8EA2] mb-3">
-        ¿Seguro que quieres finalizar?
-      </h3>
+          <div className="relative w-full max-w-md rounded-2xl border border-[#9F1B0B]/30 bg-[#120A10]/95 p-6 shadow-[0_0_30px_rgba(0,0,0,0.35)]">
+            <h3 className="text-4xl font-bold text-[#FF8EA2] mb-3">
+              ¿Seguro que quieres finalizar?
+            </h3>
 
-      <p className="text-[#F3D8DF] text-3xl leading-relaxed">
-        Si terminas la partida ahora, se cerrará el juego actual y pasarás al
-        podio.
-      </p>
+            <p className="text-[#F3D8DF] text-3xl leading-relaxed">
+              Si terminas la partida ahora, se cerrará el juego actual y pasarás al
+              podio.
+            </p>
 
-      <div className="mt-6 grid grid-cols-2 gap-3">
-        <button
-          onClick={() => setShowEndConfirm(false)}
-          className="h-15 rounded-lg text-3xl border border-white/10 bg-[#081018] text-white/70 font-bold hover:bg-white/5 transition"
-        >
-          Cancelar
-        </button>
+            <div className="mt-6 grid grid-cols-2 gap-3">
+              <button
+                onClick={() => setShowEndConfirm(false)}
+                className="h-15 rounded-lg text-3xl border border-white/10 bg-[#081018] text-white/70 font-bold hover:bg-white/5 transition"
+              >
+                Cancelar
+              </button>
 
-        <button
-          onClick={() => {
-            setShowEndConfirm(false);
-            handleEndGame();
-          }}
-          className="h-15 rounded-lg text-3xl border border-[#9F1B0B]/40 bg-[#2A0912] text-[#FF4D6D] font-bold hover:bg-[#3A0C18] transition"
-        >
-          Sí, finalizar
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+              <button
+                onClick={() => {
+                  setShowEndConfirm(false);
+                  handleEndGame();
+                }}
+                className="h-15 rounded-lg text-3xl border border-[#9F1B0B]/40 bg-[#2A0912] text-[#FF4D6D] font-bold hover:bg-[#3A0C18] transition"
+              >
+                Sí, finalizar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
