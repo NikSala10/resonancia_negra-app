@@ -66,7 +66,7 @@ const rightPathChallenges: Challenge[] = [
       },
       {
         label: 'Enviar a un jugador',
-        effects: 'El jugador enviado pierde -10 HP | Gana +3 pts individuales ',
+        effects: 'El jugador enviado pierde -10 HP | +3 pts individuales al jugador enviado',
       }
     ]
   },
@@ -211,7 +211,7 @@ const leftPathChallenges: Challenge[] = [
       },
       {
         label: 'Huir',
-        effects: 'Pierden escudo grupal | -5 pts grupales'
+        effects: 'Pierden kit médico grupal | -5 pts grupales'
       }
     ]
   },
@@ -226,7 +226,7 @@ const leftPathChallenges: Challenge[] = [
     options: [
       {
         label: 'Descifrar señal (Adrián + Leni)',
-        effects: 'Adrián gasta 1 Kit Médico | Leni gasta 1 munición si hay combate | +15 pts grupales'
+        effects: 'Adrián gasta 1 Kit Médico | Leni gasta 1 escudo de plasma si hay combate | +15 pts grupales'
       },
       {
         label: 'Descifrar sin Adrián',
