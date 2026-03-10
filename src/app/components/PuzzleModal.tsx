@@ -25,7 +25,7 @@ interface PuzzleModalProps {
   onComplete: (payload: PuzzleCompletePayload) => void;
 }
 
-const DEFAULT_SECONDS = 90;
+const DEFAULT_SECONDS = 150;
 const PUZZLE_TIMEOUT_EFFECT = "-8 pts individuales cada jugador | -10 pts grupales";
 
 export function PuzzleModal({
